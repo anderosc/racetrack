@@ -4,6 +4,10 @@ body {
     margin: 0px;
 }
 
+button {
+    cursor: pointer;
+}
+
 .button {
     cursor: pointer;
     height: 80px;
@@ -11,7 +15,6 @@ body {
     background-color: #1c1b1b;
     margin: 10px;
     border: 5px solid #88722e;
-    text-align: center;
 }
 
 .left {
@@ -29,6 +32,9 @@ body {
 	width: 80%;
 	height: calc(100% - 20px);
     border: 5px solid #88722e;
+    Display :flex;
+    align-items: center;
+    justify-content: center;
     /* Add the blur effect 
     /*filter: blur(8px);
     -webkit-filter: blur(8px);*/
@@ -39,8 +45,36 @@ p {
     color: white;
     font-weight: bold;
     font-size: 24px;
+    text-align: center;
 }
 
 a:link {
   text-decoration: none;
+}
+
+.loginbox {
+    width: 50%;
+    height: 50%;
+    border: 5px solid #88722e;
+}
+
+input[type=password] {
+    width: calc(100% - 40px);
+    padding: 12px 20px;
+    margin: 20px;
+    margin-top: 0px;
+    display: inline-block;
+    border: 5px solid #88722e;
+    box-sizing: border-box;
+}
+
+.loginbtn {
+    width: calc(100% - 40px);
+    padding: 12px 20px;
+    margin: 20px;
+    margin-top: 10px;
+    display: inline-block;
+    background-color: #1c1b1b;
+    border: 5px solid #88722e;
+    box-sizing: border-box;
 }
