@@ -35,9 +35,6 @@ button {
     Display :flex;
     align-items: center;
     justify-content: center;
-    /* Add the blur effect 
-    /*filter: blur(8px);
-    -webkit-filter: blur(8px);*/
 }
 
 p {
@@ -77,4 +74,21 @@ input[type=password] {
     background-color: #1c1b1b;
     border: 5px solid #88722e;
     box-sizing: border-box;
+}
+
+.loginerror {
+    width: calc(100% - 40px);
+    margin: 20px;
+    margin-top: 0px;
+    display: none;
+    background-color: #1c1b1b;
+    border: 5px solid #88722e;
+    box-sizing: border-box;
+}
+.loginerror p {
+    text-transform: uppercase;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
 }

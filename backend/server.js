@@ -4,12 +4,19 @@ import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-
+import "dotenv/config.js";
+import cookieParser from 'cookie-parser';
+import cookie from 'cookie';
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
+const port = process.env.PORT;
+
+const Receptionist_SESSION_TOKEN = 'receptionist_token';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+app.use(cookieParser());
 
 // Soo that we could use css stylesheet
 app.use(express.static(join(__dirname, '../frontend/css/public')));
@@ -49,15 +56,38 @@ app.get('/race-flags', (req, res) => {
 
 //Server Logic
 io.on('connection', (socket) => {
-    console.log('a user connected');
 
-    socket.on('disconnect', () => {
-        console.log('user disconnected');
+    //HANDLE LOGIN SESSIONS
+    const rawCookie = socket.handshake.headers.cookie;
+    if (rawCookie) {
+        const parsedCookies = cookie.parse(rawCookie);
+        const receptionistToken = parsedCookies.receptionist_token;
+        if(receptionistToken) {
+            if (receptionistToken === process.env.RECEPTIONIST_KEY) {
+                socket.emit('login', { persona: 'Receptionist', status: true, cookie: true });
+            }
+        }
+    }
+
+    // HANDLE LOGIN LOGIC
+    socket.on('login', (msg) => {
+        const persona = msg.persona;
+        const token = msg.token;
+        if(persona === "Receptionist") {
+            if(token === process.env.RECEPTIONIST_KEY) {
+                socket.emit('login', { persona: persona, status: true });
+            }else {
+                // Wait 0.5 Sec
+                setTimeout(() => {
+                    socket.emit('login', { persona: persona, status: false });
+                }, 500);
+            }
+        }
     });
 
 });
 
 //Server Start
-server.listen(3000, () => {
-    console.log('server running at http://localhost:3000');
+server.listen(port, () => {
+    console.log('server running at http://localhost:' + port);
 });

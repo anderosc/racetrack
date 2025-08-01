@@ -19,8 +19,9 @@
         <div class="container right">
             <div class="loginbox">
                 <label for="token"><p>Enter Authorization Token</p></label>
-                <input type="password" placeholder="Enter Authorization Token" id="token" required>
-                <button class="loginbtn" type="submit"><p>Authorize</p></button>
+                <input type="password" placeholder="Enter Authorization Token" id="token">
+                <button id="login" class="loginbtn" type="submit"><p>Authorize</p></button>
+                <div class="loginerror"><p>Authorization Failed, try again</p></div>
             </div>
         </div>
     </body>
@@ -29,4 +30,36 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io();
+
+    /*if() {
+        document.getElementsByClassName("loginbox")[0].remove();
+    }*/
+
+    const button = document.getElementById("login");
+    button.addEventListener("click", login);
+
+    function login() {
+        const input = document.getElementById("token");
+        if (input.value) {
+            socket.emit('login', { persona: 'Receptionist', token: input.value });
+        }
+    };
+
+    socket.on('login', (msg) => {
+        const input = document.getElementById("token");
+        const persona = msg.persona;
+        const status = msg.status;
+        if(persona == "Receptionist") {
+            if(status) {
+                if(msg.cookie != true) {
+                    document.cookie = "receptionist_token=" +  input.value + "; path=/";
+                }
+                document.getElementsByClassName("loginbox")[0].remove();
+            }else {
+                document.getElementsByClassName("loginerror")[0].style.display = 'inline-block';
+                input.value = "";
+            }
+        }
+    });
+
 </script>
