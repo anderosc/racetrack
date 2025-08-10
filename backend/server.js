@@ -7,10 +7,14 @@ import { dirname, join } from 'node:path';
 import "dotenv/config.js";
 import cookieParser from 'cookie-parser';
 import cookie from 'cookie';
+
 const app = express();
 const server = createServer(app);
-const io = new Server(server);
 const port = process.env.PORT;
+
+const io = new Server(server, {
+  connectionStateRecovery: {}
+});
 
 const Receptionist_SESSION_TOKEN = 'receptionist_token';
 
@@ -84,6 +88,16 @@ io.on('connection', (socket) => {
             }
         }
     });
+
+    // HANDLE Receptionist Server Logic
+    socket.on('raceSession:create', (msg) => {
+        //ADD CHECK FOR AUTHORIZATION
+        //CHECK FOR DUPLICATE NAME
+
+        console.log(msg);
+        socket.emit('raceSession:create:success', msg);
+    });
+
 
 });
 

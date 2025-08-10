@@ -17,11 +17,27 @@
             <div class="button"><a href="../race-flags"><p>Race Flag</p></div></a>
         </div>
         <div class="container right">
-            <div class="loginbox">
+            <!---<div class="loginbox">
                 <label for="token"><p>Enter Authorization Token</p></label>
-                <input type="password" placeholder="Enter Authorization Token" id="token">
+                <input type="password" placeholder="Enter Authorization Token" id="token"></input>
                 <button id="login" class="loginbtn" type="submit"><p>Authorize</p></button>
                 <div class="loginerror"><p>Authorization Failed, try again</p></div>
+            </div>!-->
+            <div class="header">
+                <p>Receptionist</p>
+                <div id="logout" class="logout">
+                    <p>Logout</p>
+                </div>
+            </div>
+            <div class="header">
+                <p>Create New Race Session</p>
+                <input type="text" placeholder="Enter race session name" id="raceSessionName"></input>
+                <div id="createRaceSession" class="logout1">
+                    <p>Create Race Session</p></button>
+                </div>
+            </div>
+            <div class="header">
+                
             </div>
         </div>
     </body>
@@ -31,19 +47,30 @@
 <script>
     const socket = io();
 
-    /*if() {
-        document.getElementsByClassName("loginbox")[0].remove();
-    }*/
-
-    const button = document.getElementById("login");
-    button.addEventListener("click", login);
-
+    //document.getElementById("login").addEventListener("click", login);
+    document.getElementById("createRaceSession").addEventListener("click", createRaceSession);
+    
     function login() {
         const input = document.getElementById("token");
         if (input.value) {
             socket.emit('login', { persona: 'Receptionist', token: input.value });
         }
     };
+
+    function buildReceptionistPage() {
+        const containerRef = document.getElementsByClassName("container right")[0];
+        const test = document.createElement("div");
+        test.id = "test";
+        containerRef.append(test);
+    }
+
+    function createRaceSession() {
+        const input = document.getElementById("raceSessionName");
+        if (input.value) {
+            socket.emit('raceSession:create', { name: input.value });
+        }
+        input.value = "";
+    }
 
     socket.on('login', (msg) => {
         const input = document.getElementById("token");
@@ -55,11 +82,20 @@
                     document.cookie = "receptionist_token=" +  input.value + "; path=/";
                 }
                 document.getElementsByClassName("loginbox")[0].remove();
+                buildReceptionistPage();
             }else {
                 document.getElementsByClassName("loginerror")[0].style.display = 'inline-block';
                 input.value = "";
             }
         }
+    });
+
+    socket.on('raceSession:create:success', (msg) => {
+        const raceSession = document.createElement("div");
+        raceSession.className = "header";
+        raceSession.innerHTML = msg.name;
+        const content = document.getElementsByClassName("container right")[0];
+        content.appendChild(raceSession);
     });
 
 </script>
