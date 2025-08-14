@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Race Control</title>
+  <link   rel="stylesheet" type="text/css" href="/main.css">
+</head>
+<body>
+  <!-- Login -->
+  <div id="login-screen">
+    <h2>Safety Official Login</h2>
+    <input type="password" id="access-key" placeholder="Enter access key">
+    <button id="login-btn">Login</button>
+    <p id="login-error" style="color:red; display:none;">Incorrect key</p>
+  </div>
+
+  <!-- Race Control UI -->
+  <div id="race-control-page">
+    <h1>Race Control</h1>
+    
+    <div id="current-session">
+      <h2>Current Session</h2>
+      <p id="race-timer">Timer: --:--</p>
+    </div>
+
+    <div id="controls">
+      <button id="start-race-btn">Start Race</button>
+      <button class="mode-btn" data-mode="Safe">Safe</button>
+      <button class="mode-btn" data-mode="Hazard">Hazard</button>
+      <button class="mode-btn" data-mode="Danger">Danger</button>
+      <button class="mode-btn" data-mode="Finish">Finish</button>
+      <button id="end-session-btn">End Session</button>
+    </div>
+    <br>
+    <br>
+    <div>
+      <div id="current-drivers"></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const loginScreen = document.getElementById("login-screen");
+    const uiScreen = document.getElementById("race-control-page");
+    const loginBtn = document.getElementById("login-btn");
+    const keyInput = document.getElementById("access-key");
+    const loginError = document.getElementById("login-error");
+
+    const startRaceBtn = document.getElementById("start-race-btn");
+    const endSessionBtn = document.getElementById("end-session-btn");
+    const modeButtons = document.querySelectorAll(".mode-btn");
+
+    const raceTimer = document.getElementById("race-timer");
+    const currentDrivers = document.getElementById("current-drivers");
+
+    loginBtn.addEventListener("click", () => {
+        socket.emit("login", { persona: "RaceControl", token: keyInput.value });
+    });
+
+    socket.on("login", (res) => {
+        if (res.status) {
+            loginScreen.style.display = "none";
+            uiScreen.style.display = "block";
+            loginError.style.display = "none";
+            socket.emit("raceControl:ready");
+        } else {
+            loginError.style.display = "block";
+        }
+    });
+
+// Start race
+    startRaceBtn.addEventListener("click", () => {
+    socket.emit("race:start");
+    });
+
+// Change race mode
+    modeButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+        socket.emit("race:changeMode", { mode: btn.dataset.mode });
+        });
+    });
+
+// End session
+    endSessionBtn.addEventListener("click", () => {
+        socket.emit("race:endSession");
+    });
+
+// Update drivers when state changes and map them to DOM
+    socket.on("state:update", (state) => {
+        // console.log(state)
+        if (state.currentSession) {
+        currentDrivers.innerHTML = state.currentSession.drivers
+            .map(driver => `<div>${driver.name} (Car ${driver.car})</div>`)
+
+        raceTimer.textContent = `Timer: ${formatTime(state.currentSession.remainingTime)}`;
+        }
+
+    });
+
+    //remaining time from socket to seconds
+    function formatTime(seconds) {
+        let m = Math.floor(seconds / 60);
+        let s = seconds % 60;
+        if (m < 10) {
+            m = '0' + m;
+        }
+        if (s < 10) {
+            s = '0' + s;
+        }
+        return m + ':' + s;
+    }
+
+  </script>
+</body>
+</html>
