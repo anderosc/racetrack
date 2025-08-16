@@ -10,13 +10,19 @@ import cookie from 'cookie';
 
 const app = express();
 const server = createServer(app);
-const port = process.env.PORT;
+// const port = process.env.PORT;
+const port = 3000;
+
 
 const io = new Server(server, {
   connectionStateRecovery: {}
 });
 
 const Receptionist_SESSION_TOKEN = 'receptionist_token';
+const SAFETY_KEY = "test";
+
+let raceSession = null; // current session
+let timerInterval = null;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -87,6 +93,15 @@ io.on('connection', (socket) => {
                 }, 500);
             }
         }
+        if(persona === "RaceControl") {
+            if(token === SAFETY_KEY) {
+                socket.emit('login', { persona, status: true });
+            } else {
+            setTimeout(() => {
+                socket.emit('login', { persona, status: false });
+            }, 500);
+        }
+    }
     });
 
     // HANDLE Receptionist Server Logic
@@ -99,7 +114,69 @@ io.on('connection', (socket) => {
     });
 
 
+// ------ race-control logic ------
+  socket.on('race:start', () => {
+    if (raceSession){
+        return;
+    }
+
+    //example object for testing (variable raceSession) - can be deleted later
+    raceSession = {
+      drivers: [
+        { name: "Alice", car: 1 },
+        { name: "Bob", car: 2 },
+        { name: "Charlie", car: 3 },
+      ],
+      mode: "Safe",
+      duration: 60,
+      remainingTime: 60
+    };
+
+    // Timer loop - updates every second. 60 second development
+    // TODO -> 10min for "npm run dev" and 60second for "npm start"
+    timerInterval = setInterval(() => {
+      if (!raceSession){
+        return;
+      }
+
+      raceSession.remainingTime = raceSession.remainingTime - 1;
+
+      if (raceSession.remainingTime <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        raceSession.remainingTime = 0;
+        raceSession.mode = "Finish";
+      }
+
+      io.emit("state:update", { currentSession: raceSession });
+    }, 1000);
+
+    io.emit("state:update", { currentSession: raceSession });
+  });
+
+  // Change mode, sent from race-control. Saved into object
+  socket.on('race:changeMode', ({ mode }) => {
+    if (raceSession) {
+      raceSession.mode = mode;
+      io.emit("state:update", { currentSession: raceSession });
+    }
+  });
+
+  // End session for all.
+  socket.on('race:endSession', () => {
+    raceSession = null;
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+    timerInterval = null;
+    io.emit("state:update", { currentSession: null });
+  });
+// ---- race control logic end ---
+
+
 });
+
+
 
 //Server Start
 server.listen(port, () => {
