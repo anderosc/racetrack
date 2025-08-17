@@ -10,7 +10,7 @@ button {
 
 .button {
     cursor: pointer;
-    height: 80px;
+    height: 70px;
     width: 260px;
     background-color: #1c1b1b;
     margin: 10px;
@@ -41,7 +41,7 @@ p {
     text-transform: uppercase;
     color: white;
     font-weight: bold;
-    font-size: 24px;
+    font-size: 22px;
     text-align: center;
 }
 
@@ -96,7 +96,7 @@ input[type=password] {
 
 .header {
     position: relative; /* Important for child absolute positioning */
-    width: calc(100% - 40px);
+    width: calc(100% - 30px);
     height: 80px;
     border: 5px solid #88722e;
     margin: 10px;
