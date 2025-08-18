@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Next Race</title>
+  <link rel="stylesheet" href="/main.css">
+</head>
+<body>
+
+
+  <div>
+    <h1>Next Race</h1>
+    <div>
+      <div>Name: <div id="name">..</div></div>
+      <div>Track: <div id="track">..</div></div>
+      <div>Car: <div id="car">..</div></div>
+      <div>Status: <div id="status">..</div></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module">
+    const socket = io();
+
+    const name = document.getElementById("name");
+    const date = document.getElementById("date");
+    const track = document.getElementById("track");
+    const status = document.getElementById("status");
+
+    function updateNextRace(data) {
+      if(data === undefined){
+        return;
+      }
+      // console.log(data.raceSession.raceName)
+      name.textContent = data.raceName.name;
+      // date.textContent = new Date(data.date).toLocaleString();
+
+    }
+
+    // If connected, update data
+    socket.on("connect", () => {
+      socket.emit("nextRace:get");
+    });
+    // Take data and call function to update ui
+    socket.on("nextRace:update", (data) => {
+      console.log(data)
+      updateNextRace(data);
+    });
+
+
+  </script>
+</body>
+</html>

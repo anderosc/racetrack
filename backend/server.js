@@ -103,14 +103,16 @@ io.on('connection', (socket) => {
         }
     }
     });
-
+        let nextRaceSessionName
     // HANDLE Receptionist Server Logic
-    socket.on('raceSession:create', (msg) => {
+    socket.on('raceSession:create', (nextRaceSessionName) => {
         //ADD CHECK FOR AUTHORIZATION
         //CHECK FOR DUPLICATE NAME
-
-        console.log(msg);
-        socket.emit('raceSession:create:success', msg);
+        raceSession = {
+            raceName : nextRaceSessionName
+        }
+        console.log(nextRaceSessionName);
+        socket.emit('raceSession:create:success', nextRaceSessionName);
     });
 
 
@@ -174,8 +176,21 @@ io.on('connection', (socket) => {
 // ---- race control logic end ---
 
 
-});
+// ---- Next Race logix
+    raceSession = {
+        raceName : nextRaceSessionName
+    }
 
+
+// Send data of next race
+socket.on("nextRace:get", () => {
+    socket.emit("nextRace:update", raceSession);
+    console.log(raceSession)
+});
+/// -----
+
+
+});
 
 
 //Server Start
