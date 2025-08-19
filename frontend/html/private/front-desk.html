@@ -67,7 +67,7 @@
     function createRaceSession() {
         const input = document.getElementById("raceSessionName");
         if (input.value) {
-            socket.emit('raceSession:create', { name: input.value });
+            socket.emit('raceSession:create',  input.value );
         }
         input.value = "";
     }
@@ -93,7 +93,7 @@
     socket.on('raceSession:create:success', (msg) => {
         const raceSession = document.createElement("div");
         raceSession.className = "header";
-        raceSession.innerHTML = msg.name;
+        raceSession.innerHTML = msg;
         const content = document.getElementsByClassName("container right")[0];
         content.appendChild(raceSession);
     });
