@@ -80,7 +80,7 @@
 // Change race mode
     modeButtons.forEach(btn => {
         btn.addEventListener("click", () => {
-        socket.emit("race:changeMode", { mode: btn.dataset.mode });
+        socket.emit("race:changeMode", btn.dataset.mode );
         });
     });
 
@@ -91,12 +91,12 @@
 
 // Update drivers when state changes and map them to DOM
     socket.on("state:update", (state) => {
-        // console.log(state)
-        if (state.currentSession) {
-        currentDrivers.innerHTML = state.currentSession.drivers
+        console.log(state)
+        if (state) {
+        currentDrivers.innerHTML = state.drivers
             .map(driver => `<div>${driver.name} (Car ${driver.car})</div>`)
 
-        raceTimer.textContent = `Timer: ${formatTime(state.currentSession.remainingTime)}`;
+        raceTimer.textContent = `Timer: ${formatTime(state.durationSeconds)}`;
         }
 
     });

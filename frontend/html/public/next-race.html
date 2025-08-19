@@ -11,8 +11,7 @@
   <div>
     <h1>Next Race</h1>
     <div>
-      <div>Name: <div id="name">..</div></div>
-      <div>Track: <div id="track">..</div></div>
+      <div>Session Name: <div id="name">..</div></div>
       <div>Car: <div id="car">..</div></div>
       <div>Status: <div id="status">..</div></div>
     </div>
@@ -32,7 +31,7 @@
         return;
       }
       // console.log(data.raceSession.raceName)
-      name.textContent = data.raceName.name;
+      name.textContent = data.sessionName;
       // date.textContent = new Date(data.date).toLocaleString();
 
     }
