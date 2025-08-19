@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path';
 import "dotenv/config.js";
 import cookieParser from 'cookie-parser';
 import cookie from 'cookie';
+import { handleLapTracking } from './lapTracker.js';
 
 const app = express();
 const server = createServer(app);
@@ -98,6 +99,8 @@ io.on('connection', (socket) => {
         socket.emit('raceSession:create:success', msg);
     });
 
+    // LAP COMPLETION EVENT
+    handleLapTracking(io, socket);
 
 });
 

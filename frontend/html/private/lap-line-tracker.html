@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/main.css">
+    <title>Lap-line Tracker</title>
+</head>
+<body>
+<div class="container left">
+    <div class="button"><a href="../front-desk"><p>Front Desk</p></a></div>
+    <div class="button"><a href="../race-control"><p>Race Control</p></a></div>
+    <div class="button"><a href="../lap-line-tracker"><p>Lap-line Tracker</p></a></div>
+    <div class="button"><a href="../leader-board"><p>Leader Board</p></a></div>
+    <div class="button"><a href="../next-race"><p>Next Race</p></a></div>
+    <div class="button"><a href="../race-countdown"><p>Race Countdown</p></a></div>
+    <div class="button"><a href="../race-flags"><p>Race Flag</p></a></div>
+</div>
+
+<div class="container right">
+    <h2>Lap-line Tracker</h2>
+    <p>Tap a car's button when it crosses the lap line.</p>
+    <div id="buttonsContainer"></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    // TEMPORARY: Example car numbers (should come from server later)
+    const cars = [1, 2, 3, 4];
+
+    const container = document.getElementById("buttonsContainer");
+
+    // Create a button for each car
+    cars.forEach(carNum => {
+        const btn = document.createElement("button");
+        btn.classList.add("car-button");
+        btn.innerText = `Car ${carNum}`;
+        btn.addEventListener("click", () => completeLap(carNum));
+        container.appendChild(btn);
+    });
+
+    // Send lap completion to server
+    function completeLap(carNum) {
+        socket.emit('lap:completed', { driver: carNum });
+    }
+
+    // Disable buttons when race ends
+    socket.on('race:end', () => {
+        document.querySelectorAll(".car-button").forEach(btn => {
+            btn.disabled = true;
+            btn.classList.add("disabled");
+        });
+    });
+</script>
+</body>
+</html>
