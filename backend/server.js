@@ -18,7 +18,8 @@ const io = new Server(server, {
   connectionStateRecovery: {}
 });
 
-const Receptionist_SESSION_TOKEN = 'receptionist_token';
+let RECEPTIONIST_SESSION_TOKEN = 'receptionist_token';
+
 const SAFETY_KEY = "test";
 
 let raceSession = null; // current session
@@ -28,8 +29,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 app.use(cookieParser());
 
-// Soo that we could use css stylesheet
-app.use(express.static(join(__dirname, '../frontend/css/public')));
+// Soo that we could use css js
+app.use('/css', express.static(join(__dirname, '../frontend/css')));
+app.use('/js', express.static(join(__dirname, '../frontend/js')));
 
 //Server Routes
 app.get('/', (req, res) => {
@@ -64,6 +66,10 @@ app.get('/race-flags', (req, res) => {
     res.sendFile(join(__dirname, '../frontend/html/public/race-flags.html'));
 });
 
+function validateReceptionistToken() {
+    return RECEPTIONIST_SESSION_TOKEN === process.env.RECEPTIONIST_KEY;
+}
+
 //Server Logic
 io.on('connection', (socket) => {
 
@@ -72,6 +78,7 @@ io.on('connection', (socket) => {
     if (rawCookie) {
         const parsedCookies = cookie.parse(rawCookie);
         const receptionistToken = parsedCookies.receptionist_token;
+        RECEPTIONIST_SESSION_TOKEN = receptionistToken;
         if(receptionistToken) {
             if (receptionistToken === process.env.RECEPTIONIST_KEY) {
                 socket.emit('login', { persona: 'Receptionist', status: true, cookie: true });
@@ -106,7 +113,11 @@ io.on('connection', (socket) => {
 
     // HANDLE Receptionist Server Logic
     socket.on('raceSession:create', (msg) => {
-        //ADD CHECK FOR AUTHORIZATION
+        //VALIDATE RECEPTIONIST TOKEN
+        if(!validateReceptionistToken()) {
+            return;
+        }
+
         //CHECK FOR DUPLICATE NAME
 
         console.log(msg);

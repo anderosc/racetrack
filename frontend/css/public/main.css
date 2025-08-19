@@ -94,7 +94,7 @@ input[type=password] {
     text-align: center;
 }
 
-.header {
+.content-box {
     position: relative; /* Important for child absolute positioning */
     width: calc(100% - 30px);
     height: 80px;
@@ -140,4 +140,30 @@ input[type=password] {
 #raceSessionName {
     padding: 20px;
     margin-left: 10px;
+}
+
+.showNavBar {
+    cursor: pointer;
+    visibility: hidden;
+    position: absolute;
+    height: 80px;
+    width: 70px;
+    margin: 10px;
+    border: 5px solid #88722e;
+    z-index: 999;
+}
+
+.navBarBox {
+    height: 10px;
+    width: 50px;
+    margin: 5px;
+    border: 5px solid #88722e;
+}
+
+.centerDiv {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 }

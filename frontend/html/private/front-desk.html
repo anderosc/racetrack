@@ -3,11 +3,12 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" type="text/css" href="/main.css">
+        <link rel="stylesheet" type="text/css" href="/css/public/main.css">
         <title>RaceTrack</title>
     </head>
     <body>
-        <div class="container left">
+        <div id="navbar" class="container left">
+            <div class="button" style="height: 40px;"><p style="font-size: 14px;">< Hide NavBar</p></div></a>
             <a href="/front-desk"><div class="button"><p>Front Desk</p></div></a>
             <a href="/race-control"><div class="button"><p>Race Control</p></div></a>
             <a href="/lap-line-tracker"><div class="button"><p>Lap-line Tracker</p></div></a>
@@ -16,86 +17,38 @@
             <a href="/race-countdown"><div class="button"><p>Race Countdown</p></div></a>
             <a href="/race-flags"><div class="button"><p>Race Flag</p></div></a>
         </div>
-        <div class="container right">
-            <!---<div class="loginbox">
+        <div id="content" class="container right">
+            <div id="showNavBarBtn" class="showNavBar">
+                <div class="navBarBox"></div>
+                <div class="navBarBox"></div>
+                <div class="navBarBox"></div>
+            </div>
+            <div class="loginbox centerDiv">
                 <label for="token"><p>Enter Authorization Token</p></label>
                 <input type="password" placeholder="Enter Authorization Token" id="token"></input>
-                <button id="login" class="loginbtn" type="submit"><p>Authorize</p></button>
-                <div class="loginerror"><p>Authorization Failed, try again</p></div>
-            </div>!-->
-            <div class="header">
+                <button id="login" class="loginbtn" type="submit"><p>Login</p></button>
+                <div class="loginerror"><p>Login Failed, please try again.</p></div>
+            </div>
+            <!---<div class="content-box">
                 <p>Receptionist</p>
                 <div id="logout" class="logout">
                     <p>Logout</p>
                 </div>
             </div>
-            <div class="header">
+            <div class="content-box">
                 <p>Create New Race Session</p>
                 <input type="text" placeholder="Enter race session name" id="raceSessionName"></input>
                 <div id="createRaceSession" class="logout1">
                     <p>Create Race Session</p></button>
                 </div>
             </div>
-            <div class="header">
+            <div class="content-box">
                 
-            </div>
+            </div>!-->
         </div>
     </body>
 </html>
 
+<script src="/js/public/navBarToggle.js"></script>
 <script src="/socket.io/socket.io.js"></script>
-<script>
-    const socket = io();
-
-    //document.getElementById("login").addEventListener("click", login);
-    document.getElementById("createRaceSession").addEventListener("click", createRaceSession);
-    
-    function login() {
-        const input = document.getElementById("token");
-        if (input.value) {
-            socket.emit('login', { persona: 'Receptionist', token: input.value });
-        }
-    };
-
-    function buildReceptionistPage() {
-        const containerRef = document.getElementsByClassName("container right")[0];
-        const test = document.createElement("div");
-        test.id = "test";
-        containerRef.append(test);
-    }
-
-    function createRaceSession() {
-        const input = document.getElementById("raceSessionName");
-        if (input.value) {
-            socket.emit('raceSession:create', { name: input.value });
-        }
-        input.value = "";
-    }
-
-    socket.on('login', (msg) => {
-        const input = document.getElementById("token");
-        const persona = msg.persona;
-        const status = msg.status;
-        if(persona == "Receptionist") {
-            if(status) {
-                if(msg.cookie != true) {
-                    document.cookie = "receptionist_token=" +  input.value + "; path=/";
-                }
-                document.getElementsByClassName("loginbox")[0].remove();
-                buildReceptionistPage();
-            }else {
-                document.getElementsByClassName("loginerror")[0].style.display = 'inline-block';
-                input.value = "";
-            }
-        }
-    });
-
-    socket.on('raceSession:create:success', (msg) => {
-        const raceSession = document.createElement("div");
-        raceSession.className = "header";
-        raceSession.innerHTML = msg.name;
-        const content = document.getElementsByClassName("container right")[0];
-        content.appendChild(raceSession);
-    });
-
-</script>
+<script src="/js/private/front-desk.js"></script>
