@@ -9,22 +9,34 @@ import cookieParser from 'cookie-parser';
 import cookie from 'cookie';
 import { handleLapTracking } from './lapTracker.js';
 
+import { nextRaceLogic } from './nextRace.js';
+import { raceControl } from './raceControl.js';
+
+import { raceTrackState } from './state.js';
+
+
 const app = express();
 const server = createServer(app);
-const port = process.env.PORT;
+// const port = process.env.PORT;
+const port = 3000;
+
 
 const io = new Server(server, {
   connectionStateRecovery: {}
 });
 
-const Receptionist_SESSION_TOKEN = 'receptionist_token';
+let RECEPTIONIST_SESSION_TOKEN = 'receptionist_token';
+
+const SAFETY_KEY = "test";
+
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 app.use(cookieParser());
 
-// Soo that we could use css stylesheet
-app.use(express.static(join(__dirname, '../frontend/css/public')));
+// Soo that we could use css js
+app.use('/css', express.static(join(__dirname, '../frontend/css')));
+app.use('/js', express.static(join(__dirname, '../frontend/js')));
 
 //Server Routes
 app.get('/', (req, res) => {
@@ -59,6 +71,10 @@ app.get('/race-flags', (req, res) => {
     res.sendFile(join(__dirname, '../frontend/html/public/race-flags.html'));
 });
 
+function validateReceptionistToken() {
+    return RECEPTIONIST_SESSION_TOKEN === process.env.RECEPTIONIST_KEY;
+}
+
 //Server Logic
 io.on('connection', (socket) => {
 
@@ -67,6 +83,7 @@ io.on('connection', (socket) => {
     if (rawCookie) {
         const parsedCookies = cookie.parse(rawCookie);
         const receptionistToken = parsedCookies.receptionist_token;
+        RECEPTIONIST_SESSION_TOKEN = receptionistToken;
         if(receptionistToken) {
             if (receptionistToken === process.env.RECEPTIONIST_KEY) {
                 socket.emit('login', { persona: 'Receptionist', status: true, cookie: true });
@@ -88,21 +105,41 @@ io.on('connection', (socket) => {
                 }, 500);
             }
         }
+        if(persona === "RaceControl") {
+            if(token === SAFETY_KEY) {
+                socket.emit('login', { persona, status: true });
+            } else {
+            setTimeout(() => {
+                socket.emit('login', { persona, status: false });
+            }, 500);
+        }
+    }
     });
-
+    
     // HANDLE Receptionist Server Logic
-    socket.on('raceSession:create', (msg) => {
+    socket.on('raceSession:create', (nextRaceSessionName) => {
+        console.log(nextRaceSessionName)
         //ADD CHECK FOR AUTHORIZATION
         //CHECK FOR DUPLICATE NAME
-
-        console.log(msg);
-        socket.emit('raceSession:create:success', msg);
+        raceTrackState.upComingRaces.push(
+            {
+                sessionName : nextRaceSessionName,
+                drivers : [],
+                durationSeconds : 30
+            }
+        )
+        console.log(nextRaceSessionName);
+        socket.emit('raceSession:create:success', nextRaceSessionName);
     });
 
     // LAP COMPLETION EVENT
     handleLapTracking(io, socket);
 
+raceControl(io, socket)
+nextRaceLogic(io, socket);
+
 });
+
 
 //Server Start
 server.listen(port, () => {
