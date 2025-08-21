@@ -24,9 +24,11 @@ export let raceTrackState = {
   // first element of upComingRaces
   currentRace: {
     sessionName: null,
+    startTime: null,
+    endTime: null,
     drivers: [],
     durationSeconds: null,
-    raceMode: 'Safe',
+    raceMode: null,
   },
   //When current race ends, it will be pushed to history.
   raceHistory: [

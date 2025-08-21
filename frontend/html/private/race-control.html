@@ -22,7 +22,7 @@
     
     <div id="current-session">
       <h2>Current Session</h2>
-      <p id="race-timer">Timer: --:--</p>
+      <div id="raceTimer">Timer: --:--</div>
     </div>
 
     <div id="controls">
@@ -61,9 +61,19 @@
     const raceTimer = document.getElementById("raceTimer");
     const currentDrivers = document.getElementById("currentDrivers");
 
+    let timerInterval = null; 
+    let raceSeconds = 0;
+
+    // let data = {}
+
     loginBtn.addEventListener("click", () => {
         socket.emit("login", { persona: "RaceControl", token: keyInput.value });
     });
+
+    socket.on("race:init", (state) => {
+      console.log(state);
+      renderDrivers(state)
+    })
 
     socket.on("login", (res) => {
         if (res.status) {
@@ -80,18 +90,51 @@
     });
 
   function renderDrivers(state){
-    if(state.currentRace.sessionName == null){
+    console.log(state)
+    console.log("works")
+    if(!state.currentRace?.sessionName){
       return;
     }
+    console.log("works")
+
     if (state.currentRace.drivers) {
       currentDrivers.innerHTML = state.currentRace.drivers
       .map(driver => `<div>${driver.name} (Car ${driver.car})</div>`)
     }
+    console.log("works")
+
   }
 // Start race
-    startRaceBtn.addEventListener("click", () => {
-    socket.emit("race:start");
-    });
+  startRaceBtn.addEventListener("click", () => {
+
+      console.log(state.currentRace)
+     const race = state.currentRace;
+    if (!race) {
+      return
+    };
+
+
+    // update timer inital value if it started
+    if (race.durationSeconds !== undefined) {
+        raceSeconds = race.durationSeconds;
+
+        
+        if (!timerInterval) {
+            timerInterval = setInterval(() => {
+                if (raceSeconds > 0) {
+                    raceSeconds--;
+                    raceTimer.innerHTML = `Timer: ${formatTime(raceSeconds)}`;
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }, 1000);
+    socket.emit("race:start", state);
+        }
+    }
+  })
+
+
 
 // Change race mode
   safeBtn.addEventListener("click", () => {
@@ -105,25 +148,26 @@
   });
 
 // End session
-    endSessionBtn.addEventListener("click", () => {
-        socket.emit("race:endSession");
-        renderDrivers();
+    endSessionBtn.addEventListener("click", (state) => {
+        socket.emit("race:endSession", state);
+        clearInterval(timerInterval);
+        raceTimer.innerHTML = "Timer: --:--"
+        renderDrivers(state);
     });
 
 // Finish session
-    endSessionBtn.addEventListener("click", () => {
+    finishBtn.addEventListener("click", () => {
         socket.emit("race:finish");
     });
 
 // Update drivers when state changes and map them to DOM
     socket.on("state:update", (state) => {
-        console.log(state.currentRace)
-        
-
-        // raceTimer.textContent = `Timer: ${formatTime(state.currentRace.dur)}`;
-        
 
     });
+
+        
+
+    
 
     //remaining time from socket to seconds
     function formatTime(seconds) {

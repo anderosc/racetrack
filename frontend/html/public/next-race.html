@@ -11,9 +11,9 @@
   <div>
     <h1>Next Race</h1>
     <div>
-      <div id="currentDrivers"> </div>
-      <div>Session Name: <div id="name">..</div></div>
-      <div>Car: <div id="car">..</div></div>
+      <div id="nextSession"></div>
+      <div id="nextDrivers"> </div>
+
       <div>Status: <div id="status">..</div></div>
     </div>
   </div>
@@ -26,7 +26,8 @@
     const date = document.getElementById("date");
     const track = document.getElementById("track");
     const status = document.getElementById("status");
-    const currentDrivers = document.getElementById("currentDrivers");
+    const nextDrivers = document.getElementById("nextDrivers");
+    const nextSession = document.getElementById("nextSession")
 
 
   function updateNextRace(state) {
@@ -38,8 +39,9 @@
       return;
     }
     if (state.upComingRaces) {
-      currentDrivers.innerHTML = state.upComingRaces[0].drivers
-      .map(driver => `<div>${driver.name} (Car ${driver.car})</div>`)
+      nextSession.innerHTML = "Next Session: " + state.upComingRaces[0].sessionName
+      nextDrivers.innerHTML = state.upComingRaces[0].drivers
+      .map(driver => `<div>${driver.name} (Car ${driver.carNumber})</div>`)
     }
   }
 
