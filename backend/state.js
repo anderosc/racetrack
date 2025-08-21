@@ -24,8 +24,6 @@ export let raceTrackState = {
   // first element of upComingRaces
   currentRace: {
     sessionName: null,
-    startTime: null,
-    endTime: null,
     drivers: [],
     durationSeconds: null,
     raceMode: 'Safe',

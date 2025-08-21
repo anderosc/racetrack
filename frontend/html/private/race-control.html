@@ -2,22 +2,22 @@
 <html>
 <head>
   <title>Race Control</title>
-  <link   rel="stylesheet" type="text/css" href="/main.css">
+  <link   rel="stylesheet">
 </head>
 <body>
 
   <!-- login
    TODO, shows the page before actually logged in hehe
     -->
-  <div id="login-screen">
+  <div id="loginScreen">
     <h2>Safety Official Login</h2>
-    <input type="password" id="access-key" placeholder="Enter access key">
-    <button id="login-btn">Login</button>
-    <p id="login-error" style="color:red; display:none;">Incorrect key</p>
+    <input type="password" id="accessKey" placeholder="Enter access key">
+    <button id="loginBtn">Login</button>
+    <p id="loginErr" style="color:red; display:none;">Incorrect key</p>
   </div>
 
 
-  <div id="race-control-page">
+  <div id="raceControl">
     <h1>Race Control</h1>
     
     <div id="current-session">
@@ -26,17 +26,17 @@
     </div>
 
     <div id="controls">
-      <button id="start-race-btn">Start Race</button>
-      <button class="mode-btn" data-mode="Safe">Safe</button>
-      <button class="mode-btn" data-mode="Hazard">Hazard</button>
-      <button class="mode-btn" data-mode="Danger">Danger</button>
-      <button class="mode-btn" data-mode="Finish">Finish</button>
-      <button id="end-session-btn">End Session</button>
+      <button id="startRaceBtn">Start Race</button>
+      <button id="safe" >Safe</button>
+      <button id="hazard" >Hazard</button>
+      <button id="danger" >Danger</button>
+      <button id="finish"  >Finish</button>
+      <button id="endSessionBtn">End Session</button>
     </div>
     <br>
     <br>
     <div>
-      <div id="current-drivers"></div>
+      <div id="currentDrivers"></div>
     </div>
   </div>
 
@@ -44,18 +44,22 @@
   <script>
     const socket = io();
 
-    const loginScreen = document.getElementById("login-screen");
-    const uiScreen = document.getElementById("race-control-page");
-    const loginBtn = document.getElementById("login-btn");
-    const keyInput = document.getElementById("access-key");
-    const loginError = document.getElementById("login-error");
+    const loginScreen = document.getElementById("loginScreen");
+    const uiScreen = document.getElementById("raceControl");
+    const loginBtn = document.getElementById("loginBtn");
+    const keyInput = document.getElementById("accessKey");
+    const loginError = document.getElementById("loginErr");
 
-    const startRaceBtn = document.getElementById("start-race-btn");
-    const endSessionBtn = document.getElementById("end-session-btn");
-    const modeButtons = document.querySelectorAll(".mode-btn");
+    const startRaceBtn = document.getElementById("startRaceBtn");
+    const endSessionBtn = document.getElementById("endSessionBtn");
+    const safeBtn = document.getElementById("safe");
+    const hazardBtn = document.getElementById("hazard");
+    const dangerBtn = document.getElementById("danger");
+    const finishBtn = document.getElementById("finish");
 
-    const raceTimer = document.getElementById("race-timer");
-    const currentDrivers = document.getElementById("current-drivers");
+
+    const raceTimer = document.getElementById("raceTimer");
+    const currentDrivers = document.getElementById("currentDrivers");
 
     loginBtn.addEventListener("click", () => {
         socket.emit("login", { persona: "RaceControl", token: keyInput.value });
@@ -66,38 +70,58 @@
             loginScreen.style.display = "none";
             uiScreen.style.display = "block";
             loginError.style.display = "none";
-            socket.emit("raceControl:ready");
+            // socket.emit("raceControl:ready");
         } else {
-            loginError.style.display = "block";
+            return
+          socket.on("race:update", (state) => {
+          renderDrivers(state)
+          });
         }
     });
 
+  function renderDrivers(state){
+    if(state.currentRace.sessionName == null){
+      return;
+    }
+    if (state.currentRace.drivers) {
+      currentDrivers.innerHTML = state.currentRace.drivers
+      .map(driver => `<div>${driver.name} (Car ${driver.car})</div>`)
+    }
+  }
 // Start race
     startRaceBtn.addEventListener("click", () => {
     socket.emit("race:start");
     });
 
 // Change race mode
-    modeButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-        socket.emit("race:changeMode", btn.dataset.mode );
-        });
-    });
+  safeBtn.addEventListener("click", () => {
+    socket.emit("race:safe");
+  });
+  hazardBtn.addEventListener("click", () => {
+    socket.emit("race:hazard");
+  });    
+  dangerBtn.addEventListener("click", () => {
+    socket.emit("race:danger");
+  });
 
 // End session
     endSessionBtn.addEventListener("click", () => {
         socket.emit("race:endSession");
+        renderDrivers();
+    });
+
+// Finish session
+    endSessionBtn.addEventListener("click", () => {
+        socket.emit("race:finish");
     });
 
 // Update drivers when state changes and map them to DOM
     socket.on("state:update", (state) => {
-        console.log(state)
-        if (state) {
-        currentDrivers.innerHTML = state.drivers
-            .map(driver => `<div>${driver.name} (Car ${driver.car})</div>`)
+        console.log(state.currentRace)
+        
 
-        raceTimer.textContent = `Timer: ${formatTime(state.durationSeconds)}`;
-        }
+        // raceTimer.textContent = `Timer: ${formatTime(state.currentRace.dur)}`;
+        
 
     });
 

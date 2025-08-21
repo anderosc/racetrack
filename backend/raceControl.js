@@ -7,21 +7,21 @@ export function raceControl(io, socket){
   let timerInterval = null;
 
   socket.on('race:start', () => {
-  if (!raceTrackState.upComingRaces[0].sessionName){
+    
+  if (raceTrackState.upComingRaces[0].sessionName === null){
       // console.log(raceTrackState.upComingRaces[0].sessionName)
     return;
   }
-
-  //Assign next race values to global currentRace variable.
-  raceTrackState.currentRace = {
-    sessionName: raceTrackState.upComingRaces[0].sessionName,
-    startTime: null,
-    endTime: null,
-    drivers: raceTrackState.upComingRaces[0].drivers,
-    durationSeconds: raceTrackState.upComingRaces[0].durationSeconds,
-    raceMode: 'Safe',
-  }
-
+      //Assign next race values to global currentRace variable.
+    raceTrackState.currentRace = {
+      sessionName: raceTrackState.upComingRaces[0].sessionName,
+      startTime: null,
+      endTime: null,
+      drivers: raceTrackState.upComingRaces[0].drivers,
+      durationSeconds: raceTrackState.upComingRaces[0].durationSeconds,
+      raceMode: 'Safe',
+    }
+    
   //Remove first element fromt upComingRace
   raceTrackState.upComingRaces.shift();
 
@@ -42,32 +42,42 @@ export function raceControl(io, socket){
     raceTrackState.currentRace.durationSeconds = 0;
     raceTrackState.currentRace.raceMode = "Finish";
   }
-  io.emit("state:update",  raceTrackState.currentRace );
 
   }, 1000);
+  io.emit("state:update",  raceTrackState );
 
 
   });
 
-  // Change mode, sent from race-control. Saved into object
-  socket.on('race:changeMode', ( mode ) => {
-    if (raceTrackState.currentRace.sessionName) {
-      raceTrackState.currentRace.raceMode = mode;
-      io.emit("state:update", raceTrackState.currentRace);
-    }
-  });
+
+  socket.on("race:safe", () => {
+    raceTrackState.currentRace.raceMode = "Safe";
+    io.emit("state:update", raceTrackState);
+  })
+  socket.on("race:hazard", () => {
+    raceTrackState.currentRace.raceMode = "Hazard";
+    io.emit("state:update", raceTrackState);
+  })
+  socket.on("race:danger", () => {
+    raceTrackState.currentRace.raceMode = "Danger";
+    io.emit("state:update", raceTrackState);
+  })
 
   // End session for all.
-  socket.on('race:endSession', () => {
-    if (timerInterval) {
-        clearInterval(timerInterval);
-    }
-    timerInterval = null;
-    io.emit("state:update",  raceTrackState.currentRace);
-    //Pus currentrace to History array and set current race to null.
+  socket.on("race:endSession", () => {
     raceTrackState.raceHistory.push(raceTrackState.currentRace);
     raceTrackState.currentRace = null;
-    // console.log("this is history:", raceTrackState.raceHistory)
+    io.emit("state:update",  raceTrackState);
+  })
 
+  //Finish session
+  socket.on("race:finish", () =>{
+  if (timerInterval) {
+    clearInterval(timerInterval);
+  }
+  timerInterval = null;
+  //Push currentrace to History array and set current race to null.
+  io.emit("state:update",  raceTrackState);
   });
+
 }

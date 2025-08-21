@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Next Race</title>
-  <link rel="stylesheet" href="/main.css">
+  <link rel="stylesheet" >
 </head>
 <body>
 
@@ -11,6 +11,7 @@
   <div>
     <h1>Next Race</h1>
     <div>
+      <div id="currentDrivers"> </div>
       <div>Session Name: <div id="name">..</div></div>
       <div>Car: <div id="car">..</div></div>
       <div>Status: <div id="status">..</div></div>
@@ -25,26 +26,36 @@
     const date = document.getElementById("date");
     const track = document.getElementById("track");
     const status = document.getElementById("status");
+    const currentDrivers = document.getElementById("currentDrivers");
 
-    function updateNextRace(data) {
-      if(data === undefined){
+
+  function updateNextRace(state) {
+    if(state === undefined){
         return;
-      }
-      // console.log(data.raceSession.raceName)
-      name.textContent = data.sessionName;
-      // date.textContent = new Date(data.date).toLocaleString();
-
     }
+    // console.log(state)
+    if(state.upComingRaces[0].sessionName === null){
+      return;
+    }
+    if (state.upComingRaces) {
+      currentDrivers.innerHTML = state.upComingRaces[0].drivers
+      .map(driver => `<div>${driver.name} (Car ${driver.car})</div>`)
+    }
+  }
 
     // If connected, update data
     socket.on("connect", () => {
-      socket.emit("nextRace:get");
+      socket.emit("state:get");
     });
+
     // Take data and call function to update ui
-    socket.on("nextRace:update", (data) => {
-      console.log(data)
-      updateNextRace(data);
+    socket.on("state:update", (state) => {
+      console.log(state)
+      updateNextRace(state);
     });
+
+
+
 
 
   </script>
