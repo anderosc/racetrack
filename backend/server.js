@@ -37,6 +37,7 @@ app.use(cookieParser());
 // Soo that we could use css js
 app.use('/css', express.static(join(__dirname, '../frontend/css')));
 app.use('/js', express.static(join(__dirname, '../frontend/js')));
+app.use('/img', express.static(join(__dirname, '../frontend/img')));
 
 //Server Routes
 app.get('/', (req, res) => {
@@ -87,6 +88,7 @@ io.on('connection', (socket) => {
         if(receptionistToken) {
             if (receptionistToken === process.env.RECEPTIONIST_KEY) {
                 socket.emit('login', { persona: 'Receptionist', status: true, cookie: true });
+                socket.join('receptionist');
             }
         }
     }
@@ -98,6 +100,8 @@ io.on('connection', (socket) => {
         if(persona === "Receptionist") {
             if(token === process.env.RECEPTIONIST_KEY) {
                 socket.emit('login', { persona: persona, status: true });
+                socket.join('receptionist');
+                io.to('receptionist').emit('raceList', raceTrackState.upComingRaces);
             }else {
                 // Wait 0.5 Sec
                 setTimeout(() => {
@@ -115,21 +119,35 @@ io.on('connection', (socket) => {
         }
     }
     });
+
+    io.to('receptionist').emit('raceList', raceTrackState.upComingRaces);
     
     // HANDLE Receptionist Server Logic
     socket.on('raceSession:create', (nextRaceSessionName) => {
-        console.log(nextRaceSessionName)
+        //console.log(nextRaceSessionName);
         //ADD CHECK FOR AUTHORIZATION
         //CHECK FOR DUPLICATE NAME
         raceTrackState.upComingRaces.push(
             {
-                sessionName : nextRaceSessionName,
+                sessionName : nextRaceSessionName.sessionName,
                 drivers : [],
                 durationSeconds : 30
             }
         )
-        console.log(nextRaceSessionName);
-        socket.emit('raceSession:create:success', nextRaceSessionName);
+        //console.log(nextRaceSessionName);
+        /*let counter = 0;
+        raceTrackState.upComingRaces.forEach(element => {
+            counter++;
+            console.log(element);
+        });*/
+        io.to('receptionist').emit('raceSession:create:success', nextRaceSessionName);
+    });
+
+    socket.on('raceSession:delete', (msg) => {
+        raceTrackState.upComingRaces = raceTrackState.upComingRaces.filter(
+            race => race.sessionName.trim().toLowerCase() !== msg.sessionName.trim().toLowerCase()
+        );
+        
     });
 
     // LAP COMPLETION EVENT
