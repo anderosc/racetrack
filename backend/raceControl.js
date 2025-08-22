@@ -1,4 +1,4 @@
-import { raceTrackState } from './state.js';
+import { raceTrackState, saveState  } from './state.js';
 
 export function raceControl(io, socket){
 
@@ -23,6 +23,7 @@ export function raceControl(io, socket){
   // Timer loop - updates every second. 60 second development
   // TODO -> 10min for "npm run dev" and 60second for "npm start"
   assignNextRace()
+  saveState();
   // console.log(state)
   io.emit("race:update", raceTrackState)
   raceTrackState.currentRace.raceMode = "Safe"
@@ -37,6 +38,8 @@ export function raceControl(io, socket){
     //Countdown seconds
   raceTrackState.currentRace.durationSeconds = raceTrackState.currentRace.durationSeconds - 1;
   // console.log(raceTrackState.currentRace.durationSeconds)
+  console.log(raceTrackState);
+
 
     //If timer reaches 0 then stop timer
   if (raceTrackState.currentRace.durationSeconds <= 0) {
@@ -46,7 +49,7 @@ export function raceControl(io, socket){
     raceTrackState.currentRace.raceMode = "Finish";
     io.emit("race:finish", raceTrackState)
   }
-
+  saveState();
   }, 1000);
   io.emit("state:update",  raceTrackState );
   });
@@ -79,6 +82,7 @@ export function raceControl(io, socket){
     clearInterval(timerInterval);
   }
   timerInterval = null;
+  raceTrackState.currentRace.durationSeconds = 0;
   //Push currentrace to History array and set current race to null.
   io.emit("state:update",  raceTrackState);
   });

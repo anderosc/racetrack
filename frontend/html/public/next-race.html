@@ -14,7 +14,7 @@
       <div id="nextSession"></div>
       <div id="nextDrivers"> </div>
 
-      <div>Status: <div id="status">..</div></div>
+      <div id="err" style="display: none;">No upcoming races!</div>
     </div>
   </div>
 
@@ -25,7 +25,7 @@
     const name = document.getElementById("name");
     const date = document.getElementById("date");
     const track = document.getElementById("track");
-    const status = document.getElementById("status");
+    const err = document.getElementById("err");
     const nextDrivers = document.getElementById("nextDrivers");
     const nextSession = document.getElementById("nextSession")
 
@@ -35,14 +35,23 @@
         return;
     }
     // console.log(state)
-    if(state.upComingRaces[0].sessionName === null){
+    if(!state?.upComingRaces || state.upComingRaces.length === 0){
+      err.style.display = "block"
+      nextSession.innerHTML = "";
+      nextDrivers.innerHTML = "";
       return;
     }
-    if (state.upComingRaces) {
-      nextSession.innerHTML = "Next Session: " + state.upComingRaces[0].sessionName
-      nextDrivers.innerHTML = state.upComingRaces[0].drivers
-      .map(driver => `<div>${driver.name} (Car ${driver.carNumber})</div>`)
+    const race = state.upComingRaces[0];
+    if (!race?.sessionName) {
+      err.style.display = "block";
+      return;
     }
+
+    err.style.display = "none";
+    nextSession.innerHTML = "Next Session: " + race.sessionName;
+    nextDrivers.innerHTML = race.drivers
+    .map(driver => `<div>${driver.name} (Car ${driver.carNumber})</div>`)
+    .join("");
   }
 
     // If connected, update data

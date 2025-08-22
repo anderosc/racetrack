@@ -62,6 +62,7 @@
     const uiScreen = document.getElementById("raceControl");
     const loginBtn = document.getElementById("loginBtn");
     const keyInput = document.getElementById("accessKey");
+    const loginErr = document.getElementById("loginErr")
     const errTag = document.getElementById("err");
 
     const initRace = document.getElementById("initRace");
@@ -101,20 +102,27 @@ console.log("Render state:", state);
     endSessionBtn.style.display = "none";
     errTag.style.display = "none"
 
-  } else if (state.currentRace?.isStarted) {
+  } else if (state.currentRace?.raceMod === "Finish") {
 
     startRaceBtn.style.display = "none"; 
     raceControls.style.display = "none";
     endSessionBtn.style.display = "block";
     errTag.style.display = "none"
 
-  } else if (state.currentRace?.raceMode === "Finish") {
-
-    startRaceBtn.style.display = "none";
-    raceControls.style.display = "none";
-    endSessionBtn.style.display = "block";
-    errTag.style.display = "none"
-
+  } else if (state.currentRace?.raceMode === "Danger" && state.currentRace?.isEnded == true  ) {
+      if(state.upComingRaces.length == 0 || state.upComingRaces == null){
+        startRaceBtn.style.display = "none";
+        raceControls.style.display = "none";
+        endSessionBtn.style.display = "none";
+        errTag.innerHTML ="No upcoming races"
+        errTag.style.display = "block"
+          return
+    } else { 
+        startRaceBtn.style.display = "block";
+        raceControls.style.display = "none";
+        endSessionBtn.style.display = "none";
+        errTag.style.display = "none"
+    }
   } else{
 
     startRaceBtn.style.display = "block"
@@ -139,13 +147,13 @@ socket.on("login", (res) => {
     if (res.status) {
         loginScreen.style.display = "none";
         uiScreen.style.display = "block";
-        errTag.style.display = "none";
+        loginErr.style.display = "none";
 
         // Emit init after loginit
         socket.emit("race:init");
     } else {
-        errTag.innerHTML = "Incorrect key"
-        err.style.display = "block";
+      console.log("hh")
+        loginErr.style.display = "block";
 
     }
 });
@@ -213,6 +221,7 @@ socket.on("login", (res) => {
     clearInterval(timerInterval);
     raceTimer.innerHTML = "Timer: --:--"
     socket.emit("race:init")
+
     // renderDrivers(state);
   });
 

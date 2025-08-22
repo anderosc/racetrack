@@ -128,7 +128,7 @@ io.on('connection', (socket) => {
                 durationSeconds : 30
             }
         )
-        console.log(nextRaceSessionName);
+        // console.log(nextRaceSessionName);
         socket.emit('raceSession:create:success', nextRaceSessionName);
     });
 
