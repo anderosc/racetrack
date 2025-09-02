@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Next Race</title>
-  <link rel="stylesheet" href="/main.css">
+  <link rel="stylesheet" >
 </head>
 <body>
 
@@ -11,9 +11,10 @@
   <div>
     <h1>Next Race</h1>
     <div>
-      <div>Session Name: <div id="name">..</div></div>
-      <div>Car: <div id="car">..</div></div>
-      <div>Status: <div id="status">..</div></div>
+      <div id="nextSession"></div>
+      <div id="nextDrivers"> </div>
+
+      <div id="err" style="display: none;">No upcoming races!</div>
     </div>
   </div>
 
@@ -24,27 +25,48 @@
     const name = document.getElementById("name");
     const date = document.getElementById("date");
     const track = document.getElementById("track");
-    const status = document.getElementById("status");
+    const err = document.getElementById("err");
+    const nextDrivers = document.getElementById("nextDrivers");
+    const nextSession = document.getElementById("nextSession")
 
-    function updateNextRace(data) {
-      if(data === undefined){
+
+  function updateNextRace(state) {
+    if(state === undefined){
         return;
-      }
-      // console.log(data.raceSession.raceName)
-      name.textContent = data.sessionName;
-      // date.textContent = new Date(data.date).toLocaleString();
-
     }
+    // console.log(state)
+    if(!state?.upComingRaces || state.upComingRaces.length === 0){
+      err.style.display = "block"
+      nextSession.innerHTML = "";
+      nextDrivers.innerHTML = "";
+      return;
+    }
+    const race = state.upComingRaces[0];
+    if (!race?.sessionName) {
+      err.style.display = "block";
+      return;
+    }
+
+    err.style.display = "none";
+    nextSession.innerHTML = "Next Session: " + race.sessionName;
+    nextDrivers.innerHTML = race.drivers
+    .map(driver => `<div>${driver.name} (Car ${driver.carNumber})</div>`)
+    .join("");
+  }
 
     // If connected, update data
     socket.on("connect", () => {
-      socket.emit("nextRace:get");
+      socket.emit("state:get");
     });
+
     // Take data and call function to update ui
-    socket.on("nextRace:update", (data) => {
-      console.log(data)
-      updateNextRace(data);
+    socket.on("state:update", (state) => {
+      console.log(state)
+      updateNextRace(state);
     });
+
+
+
 
 
   </script>

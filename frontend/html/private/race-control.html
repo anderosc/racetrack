@@ -2,117 +2,259 @@
 <html>
 <head>
   <title>Race Control</title>
-  <link   rel="stylesheet" type="text/css" href="/main.css">
+  <link   rel="stylesheet">
 </head>
 <body>
 
   <!-- login
    TODO, shows the page before actually logged in hehe
     -->
-  <div id="login-screen">
+  <div id="loginScreen">
     <h2>Safety Official Login</h2>
-    <input type="password" id="access-key" placeholder="Enter access key">
-    <button id="login-btn">Login</button>
-    <p id="login-error" style="color:red; display:none;">Incorrect key</p>
+    <input type="password" id="accessKey" placeholder="Enter access key">
+    <button id="loginBtn">Login</button>
+    <p id="loginErr" style="color:red; display:none;">Incorrect key</p>
   </div>
 
 
-  <div id="race-control-page">
+  <div id="raceControl" style="display:none;">
     <h1>Race Control</h1>
     
     <div id="current-session">
       <h2>Current Session</h2>
-      <p id="race-timer">Timer: --:--</p>
+      <div id="raceTimer">Timer: --:--</div>
     </div>
 
     <div id="controls">
-      <button id="start-race-btn">Start Race</button>
-      <button class="mode-btn" data-mode="Safe">Safe</button>
-      <button class="mode-btn" data-mode="Hazard">Hazard</button>
-      <button class="mode-btn" data-mode="Danger">Danger</button>
-      <button class="mode-btn" data-mode="Finish">Finish</button>
-      <button id="end-session-btn">End Session</button>
+      <!-- <div id="">
+        <button id="initRace"> Init Race</button>
+      </div> -->
+      
+      <div> 
+        <button id="startRaceBtn">Start Race</button>
+      </div>
+
+      <div id="raceControls">
+        <button id="safe" >Safe</button>
+        <button id="hazard" >Hazard</button>
+        <button id="danger" >Danger</button>
+        <button id="finish"  >Finish</button>
+      </div>
+
+      <div>
+        <button id="endSessionBtn">End Session</button>
+      </div>
+
     </div>
     <br>
     <br>
     <div>
-      <div id="current-drivers"></div>
+      <div id="currentDrivers"></div>
     </div>
+    <p id="err" style="color:red; display:none;"></p>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
 
-    const loginScreen = document.getElementById("login-screen");
-    const uiScreen = document.getElementById("race-control-page");
-    const loginBtn = document.getElementById("login-btn");
-    const keyInput = document.getElementById("access-key");
-    const loginError = document.getElementById("login-error");
+    const loginScreen = document.getElementById("loginScreen");
+    const uiScreen = document.getElementById("raceControl");
+    const loginBtn = document.getElementById("loginBtn");
+    const keyInput = document.getElementById("accessKey");
+    const loginErr = document.getElementById("loginErr")
+    const errTag = document.getElementById("err");
 
-    const startRaceBtn = document.getElementById("start-race-btn");
-    const endSessionBtn = document.getElementById("end-session-btn");
-    const modeButtons = document.querySelectorAll(".mode-btn");
+    const initRace = document.getElementById("initRace");
+    const startRaceBtn = document.getElementById("startRaceBtn");
+    const endSessionBtn = document.getElementById("endSessionBtn");
+    const safeBtn = document.getElementById("safe");
+    const hazardBtn = document.getElementById("hazard");
+    const dangerBtn = document.getElementById("danger");
+    const finishBtn = document.getElementById("finish");
 
-    const raceTimer = document.getElementById("race-timer");
-    const currentDrivers = document.getElementById("current-drivers");
+    const raceControls = document.getElementById("raceControls");
 
-    loginBtn.addEventListener("click", () => {
-        socket.emit("login", { persona: "RaceControl", token: keyInput.value });
-    });
+    const raceTimer = document.getElementById("raceTimer");
+    const currentDrivers = document.getElementById("currentDrivers");
 
-    socket.on("login", (res) => {
-        if (res.status) {
-            loginScreen.style.display = "none";
-            uiScreen.style.display = "block";
-            loginError.style.display = "none";
-            socket.emit("raceControl:ready");
-        } else {
-            loginError.style.display = "block";
-        }
-    });
+    let timerInterval = null; 
+    let raceSeconds = 0;
+
+    // let data = {}
+// Listen serverist tulevat state'i
+function renderRaceState(state) {
+console.log("Render state:", state);
+
+  console.log("Got state from server:", state);
+  if(state.upComingRaces.length == 0 || state.upComingRaces == null){
+    startRaceBtn.style.display = "none";
+    raceControls.style.display = "none";
+    endSessionBtn.style.display = "none";
+    errTag.innerHTML ="No upcoming races"
+    errTag.style.display = "block"
+    return
+  }
+
+  if (state.currentRace?.isStarted && state.currentRace.durationSeconds > 0) {
+    startRaceBtn.style.display = "none";
+    raceControls.style.display = "block";
+    endSessionBtn.style.display = "none";
+    errTag.style.display = "none"
+
+  } else if (state.currentRace?.raceMod === "Finish") {
+
+    startRaceBtn.style.display = "none"; 
+    raceControls.style.display = "none";
+    endSessionBtn.style.display = "block";
+    errTag.style.display = "none"
+
+  } else if (state.currentRace?.raceMode === "Danger" && state.currentRace?.isEnded == true  ) {
+      if(state.upComingRaces.length == 0 || state.upComingRaces == null){
+        startRaceBtn.style.display = "none";
+        raceControls.style.display = "none";
+        endSessionBtn.style.display = "none";
+        errTag.innerHTML ="No upcoming races"
+        errTag.style.display = "block"
+          return
+    } else { 
+        startRaceBtn.style.display = "block";
+        raceControls.style.display = "none";
+        endSessionBtn.style.display = "none";
+        errTag.style.display = "none"
+    }
+  } else{
+
+    startRaceBtn.style.display = "block"
+    raceControls.style.display = "none";
+    endSessionBtn.style.display = "none";
+    errTag.style.display = "none"
+
+  }
+
+}
+
+socket.on("race:init:update", renderRaceState);
+socket.on("race:state:update", renderRaceState);
+
+
+// Login click
+loginBtn.addEventListener("click", () => {
+    socket.emit("login", { persona: "RaceControl", token: keyInput.value });
+});
+
+socket.on("login", (res) => {
+    if (res.status) {
+        loginScreen.style.display = "none";
+        uiScreen.style.display = "block";
+        loginErr.style.display = "none";
+
+        // Emit init after loginit
+        socket.emit("race:init");
+    } else {
+      console.log("hh")
+        loginErr.style.display = "block";
+
+    }
+});
 
 // Start race
-    startRaceBtn.addEventListener("click", () => {
+  startRaceBtn.addEventListener("click", () => {
+        // console.log("triggereddddads")
     socket.emit("race:start");
-    });
+
+    socket.on("race:update",(state) =>{
+      const race = state.currentRace
+
+      console.log("this is state" , state)
+    // socket.on("race:update", raceTrackState)
+
+    startRaceBtn.style.display = "none"
+    raceControls.style.display = "block"
+    endSessionBtn.style.display = "none"
+    if (race.durationSeconds !== undefined) {
+        raceSeconds = race.durationSeconds;
+      // console.log(raceSeconds)
+
+        if (!timerInterval) {
+            timerInterval = setInterval(() => {
+                if (raceSeconds > 0) {
+                    raceSeconds--;
+                    raceTimer.innerHTML = `Timer: ${formatTime(raceSeconds)}`;
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                      socket.emit("race:finish");
+                      clearInterval(timerInterval);
+                      endSessionBtn.style.display = "block"
+                      raceControls.style.display = "none"
+                }
+                console.log(state)
+            }, 1000);
+        }
+    }
+  })
+    })
+
+
+
+    // update timer inital value if it started
+
+
+
 
 // Change race mode
-    modeButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-        socket.emit("race:changeMode", btn.dataset.mode );
-        });
-    });
+  safeBtn.addEventListener("click", () => {
+    socket.emit("race:safe");
+  });
+  hazardBtn.addEventListener("click", () => {
+    socket.emit("race:hazard");
+  });    
+  dangerBtn.addEventListener("click", () => {
+    socket.emit("race:danger");
+  });
 
 // End session
-    endSessionBtn.addEventListener("click", () => {
-        socket.emit("race:endSession");
+
+  endSessionBtn.addEventListener("click", (state) => {
+    socket.emit("race:endSession", state);
+    clearInterval(timerInterval);
+    raceTimer.innerHTML = "Timer: --:--"
+    socket.emit("race:init")
+
+    // renderDrivers(state);
+  });
+
+// Finish session
+    finishBtn.addEventListener("click", () => {
+        socket.emit("race:finish");
+        clearInterval(timerInterval);
+        endSessionBtn.style.display = "block"
+        raceControls.style.display = "none"
+
     });
 
 // Update drivers when state changes and map them to DOM
     socket.on("state:update", (state) => {
-        console.log(state)
-        if (state) {
-        currentDrivers.innerHTML = state.drivers
-            .map(driver => `<div>${driver.name} (Car ${driver.car})</div>`)
-
-        raceTimer.textContent = `Timer: ${formatTime(state.durationSeconds)}`;
-        }
 
     });
 
+        
+
+    
+
     //remaining time from socket to seconds
-    function formatTime(seconds) {
-        let m = Math.floor(seconds / 60);
-        let s = seconds % 60;
-        if (m < 10) {
-            m = '0' + m;
-        }
-        if (s < 10) {
-            s = '0' + s;
-        }
-        return m + ':' + s;
+  function formatTime(seconds) {
+    let m = Math.floor(seconds / 60);
+    let s = seconds % 60;
+    if (m < 10) {
+      m = '0' + m;
     }
+    if (s < 10) {
+      s = '0' + s;
+    }
+      return m + ':' + s;
+  }
 
   </script>
 </body>
