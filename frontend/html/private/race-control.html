@@ -160,8 +160,10 @@ socket.on("login", (res) => {
 
 // Start race
   startRaceBtn.addEventListener("click", () => {
-        // console.log("triggereddddads")
     socket.emit("race:start");
+});
+
+
 
     socket.on("race:update",(state) =>{
       const race = state.currentRace
@@ -194,7 +196,7 @@ socket.on("login", (res) => {
         }
     }
   })
-    })
+    
 
 
 
@@ -231,7 +233,7 @@ socket.on("login", (res) => {
         clearInterval(timerInterval);
         endSessionBtn.style.display = "block"
         raceControls.style.display = "none"
-
+        timerInterval = null
     });
 
 // Update drivers when state changes and map them to DOM
