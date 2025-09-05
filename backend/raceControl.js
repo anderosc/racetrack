@@ -2,22 +2,23 @@ import { raceTrackState, saveState  } from './state.js';
 
 
 let timerInterval = null;
-
-// Kohe käivitatav kood faili laadimisel
-
+//Check in which envrionment sevrer started -> production or development. Assign race duration.
+const TIMER_DURATION = process.env.NODE_ENV === 'development' ? 60 : 600;
 
 export function raceControl(io, socket){
 
+    //"Immediately Invoked Function Expression"
+    // Check before if server was closed before and do we have current race saved data. If yes, continue it.
   (function startRaceIfOngoing() {
-console.log(raceTrackState)
+    console.log(raceTrackState)
 
     if (!timerInterval && raceTrackState.currentRace.isStarted && !raceTrackState.currentRace.isEnded) {
       console.log(raceTrackState.currentRace)
-        console.log("Poolik race leitud, käivitan timer!");
+        // console.log("Found it");
         timerInterval = setInterval(() => {
             raceTrackState.currentRace.durationSeconds -= 1;
             console.log(raceTrackState)
-            // Kui timer jõuab 0-ni
+            // If timer reaches 0
             if (raceTrackState.currentRace.durationSeconds <= 0) {
                 clearInterval(timerInterval);
                 timerInterval = null;
@@ -26,7 +27,7 @@ console.log(raceTrackState)
             }
 
             saveState();
-            // IO on veel undefined siin, sa saad selle hiljem ühenduse puhul kasutada
+            
         }, 1000);
     }
 })();
@@ -56,10 +57,13 @@ console.log(raceTrackState)
   assignNextRace()
   saveState();
   // console.log(state)
-  io.emit("race:update", raceTrackState)
   raceTrackState.currentRace.raceMode = "Safe"
   raceTrackState.currentRace.isStarted = true;
   raceTrackState.currentRace.isEnded = false;
+  raceTrackState.currentRace.durationSeconds = TIMER_DURATION;
+  io.emit("race:update", raceTrackState)
+
+
 
 
   timerInterval = setInterval(() => {
