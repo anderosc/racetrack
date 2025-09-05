@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Race Control</title>
-  <link   rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/css/public/main.css">
 </head>
 <body>
 
@@ -84,7 +84,6 @@
     // let data = {}
 // Listen serverist tulevat state'i
 function renderRaceState(state) {
-console.log("Render state:", state);
 
   console.log("Got state from server:", state);
   if(state.upComingRaces.length == 0 || state.upComingRaces == null){
@@ -101,6 +100,23 @@ console.log("Render state:", state);
     raceControls.style.display = "block";
     endSessionBtn.style.display = "none";
     errTag.style.display = "none"
+    console.log("this one went through")
+     if (!timerInterval) {
+            timerInterval = setInterval(() => {
+                if (state.currentRace.durationSeconds > 0) {
+                    state.currentRace.durationSeconds--;
+                    raceTimer.innerHTML = `Timer: ${formatTime(state.currentRace.durationSeconds)}`;
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                      socket.emit("race:finish");
+                      clearInterval(timerInterval);
+                      endSessionBtn.style.display = "block"
+                      raceControls.style.display = "none"
+                }
+                console.log("this is the state" , state)
+            }, 1000);
+        }
 
   } else if (state.currentRace?.raceMod === "Finish") {
 

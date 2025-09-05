@@ -1,8 +1,39 @@
 import { raceTrackState, saveState  } from './state.js';
 
+
+let timerInterval = null;
+
+// Kohe käivitatav kood faili laadimisel
+
+
 export function raceControl(io, socket){
 
-  let timerInterval = null;
+  (function startRaceIfOngoing() {
+console.log(raceTrackState)
+
+    if (!timerInterval && raceTrackState.currentRace.isStarted && !raceTrackState.currentRace.isEnded) {
+      console.log(raceTrackState.currentRace)
+        console.log("Poolik race leitud, käivitan timer!");
+        timerInterval = setInterval(() => {
+            raceTrackState.currentRace.durationSeconds -= 1;
+            console.log(raceTrackState)
+            // Kui timer jõuab 0-ni
+            if (raceTrackState.currentRace.durationSeconds <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                raceTrackState.currentRace.durationSeconds = 0;
+                raceTrackState.currentRace.raceMode = "Finish";
+            }
+
+            saveState();
+            // IO on veel undefined siin, sa saad selle hiljem ühenduse puhul kasutada
+        }, 1000);
+    }
+})();
+
+
+    
+  
 
   socket.on("race:init", () =>{
     socket.emit("race:init:update", raceTrackState)
@@ -28,6 +59,8 @@ export function raceControl(io, socket){
   io.emit("race:update", raceTrackState)
   raceTrackState.currentRace.raceMode = "Safe"
   raceTrackState.currentRace.isStarted = true;
+  raceTrackState.currentRace.isEnded = false;
+
 
   timerInterval = setInterval(() => {
 
@@ -54,7 +87,7 @@ export function raceControl(io, socket){
   io.emit("state:update",  raceTrackState );
   });
 
-
+  //Change modes, update them
   socket.on("race:safe", () => {
     raceTrackState.currentRace.raceMode = "Safe";
     io.emit("state:update", raceTrackState);
