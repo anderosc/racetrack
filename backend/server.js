@@ -26,8 +26,6 @@ const io = new Server(server, {
 
 let RECEPTIONIST_SESSION_TOKEN = 'receptionist_token';
 
-const SAFETY_KEY = "test";
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 app.use(cookieParser());
@@ -105,7 +103,7 @@ io.on('connection', (socket) => {
             }
         }
         if(persona === "RaceControl") {
-            if(token === SAFETY_KEY) {
+            if(token === process.env.SAFETY_KEY) {
                 socket.emit('login', { persona, status: true });
             } else {
             setTimeout(() => { 
