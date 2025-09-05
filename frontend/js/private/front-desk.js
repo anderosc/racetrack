@@ -71,19 +71,22 @@ function buildReceptionistPage() {
 }
 
 function createRaceSession() {
-    const input = document.getElementById("raceSessionName");
-    if (input.value) {
-        socket.emit('raceSession:create', { sessionName: input.value }); //, drivers: []
+    const input = document.getElementById("raceSessionName").value;
+    if (input) {
+        socket.emit('raceSession:create', { sessionName: input }); //, drivers: []
     }
     input.value = "";
 }
 
 function createRaceBox(raceName) {
-
-    //Reference to scrollable container
+    // Reference to scrollable container
     const scrollableContainerRef = document.getElementsByClassName("scrollable-container")[0];
 
-    // Create main container
+    // Create outer race session container
+    const raceSessionContainer = document.createElement('div');
+    raceSessionContainer.className = 'race-session';
+
+    // Create main container (inner box)
     const innerBox = document.createElement('div');
     innerBox.className = 'inner-box';
 
@@ -93,8 +96,9 @@ function createRaceBox(raceName) {
     flagIconLeft.src = '/img/raceFlagIcon.png';
     innerBox.appendChild(flagIconLeft);
 
-    // Create paragraph
+    // Create race name paragraph
     const paragraph = document.createElement('p');
+    paragraph.className = 'race-session-name';
     paragraph.textContent = raceName;
     innerBox.appendChild(paragraph);
 
@@ -108,11 +112,11 @@ function createRaceBox(raceName) {
     const deleteBox = document.createElement('div');
     deleteBox.className = 'delete inner-box-small';
     deleteBox.addEventListener("click", deleteRaceSession);
+    
     const deleteIcon = document.createElement('img');
     deleteIcon.className = 'icon';
     deleteIcon.src = '/img/deleteIcon.png';
     deleteBox.appendChild(deleteIcon);
-
     innerBox.appendChild(deleteBox);
 
     // Create edit button
@@ -124,24 +128,27 @@ function createRaceBox(raceName) {
     const editIcon = document.createElement('img');
     editIcon.className = 'icon';
     editIcon.src = '/img/racer.png';
-
     editBox.appendChild(editIcon);
     innerBox.appendChild(editBox);
 
-    scrollableContainerRef.appendChild(innerBox);
+    // Append innerBox to race-session container
+    raceSessionContainer.appendChild(innerBox);
+
+    // Finally append the whole race-session container to scrollable container
+    scrollableContainerRef.appendChild(raceSessionContainer);
 }
 
-function createRacersBoxes() {
-    
-}
 
 function deleteRaceBox(raceName) {
     const sessionNameToDelete = raceName.trim().toLowerCase();
-    const boxes = document.querySelectorAll('.inner-box');
-    boxes.forEach(box => {
-        const dataName = box.innerText;
-        if (dataName && dataName.trim().toLowerCase() === sessionNameToDelete) {
-            box.remove();
+    const boxes = document.querySelectorAll('.race-session');
+
+    boxes.forEach(session => {
+        const innerBox = session.querySelector('.inner-box');
+        const nameElement = innerBox.querySelector('p');
+
+        if (nameElement && nameElement.textContent.trim().toLowerCase() === sessionNameToDelete) {
+            session.remove();
         }
     });
 }
@@ -153,7 +160,7 @@ function editRaceSession(event) {
     socket.emit('raceSession:get', { sessionName: sessionName });
 }
 
-function createRaceDriversBox() {
+function createRaceDriversBox(drivers) {
     // Create the outer container
     const container = document.createElement('div');
     container.className = 'drivers-container';
@@ -200,8 +207,9 @@ function createRaceDriversBox() {
     const innerBox = document.createElement('div');
     innerBox.className = 'inner-box-small';
     innerBox.style.width = '155px';
-    innerBox.style.height = '56px';
+    innerBox.style.height = '55px';
     innerBox.style.top = '-5px';
+    innerBox.addEventListener("click", addDriver);
 
     const innerText = document.createElement('p');
     innerText.textContent = 'Add driver';
@@ -215,16 +223,79 @@ function createRaceDriversBox() {
     box.appendChild(label);
     box.appendChild(select);
     box.appendChild(innerBox);
+
     container.appendChild(box);
+
+    let counter = 1;
+
+    drivers.forEach(element => {
+        const driverItem = document.createElement('div');
+        driverItem.className = "drivers-box";
+
+        const nameText = document.createElement('p');
+        nameText.textContent = `${element.name} - Car ${element.carNumber}`;
+        nameText.style.fontSize = '18px';
+        driverItem.appendChild(nameText);
+
+        const numberBox = document.createElement('div');
+        numberBox.className = 'inner-box-small driver-number';
+
+        const numberText = document.createElement('p');
+        numberText.textContent = element.carNumber;
+        numberText.style.fontSize = '18px';
+        numberBox.appendChild(numberText);
+        driverItem.appendChild(numberBox);
+
+        const deleteBox = document.createElement('div');
+        deleteBox.className = 'delete inner-box-small';
+        deleteBox.style.height = '55px';
+        deleteBox.style.width = '60px';
+
+        const deleteImg = document.createElement('img');
+        deleteImg.className = 'icon-small';
+        deleteImg.src = '/img/deleteIcon.png';
+        deleteBox.appendChild(deleteImg);
+        driverItem.appendChild(deleteBox);
+
+        const editBox = document.createElement('div');
+        editBox.className = 'delete inner-box-small';
+        editBox.style.height = '55px';
+        editBox.style.width = '60px';
+        editBox.style.right = '60px';
+
+        const editImg = document.createElement('img');
+        editImg.className = 'icon-small';
+        editImg.src = '/img/editIcon.png';
+        editBox.appendChild(editImg);
+        driverItem.appendChild(editBox);
+
+        container.appendChild(driverItem);
+
+        counter++;
+    });
 
     return container;
 }
 
 function deleteRaceSession(event) {
-    const element = event.currentTarget.closest(".inner-box");
+    const element = event.currentTarget.closest(".race-session");
     if (!element) return;
-    const sessionName = element.innerText.trim();
+    const sessionName = element.getElementsByClassName("race-session-name")[0].innerText.trim();
+    if (!sessionName) return;
     socket.emit('raceSession:delete', { sessionName: sessionName });
+}
+
+function addDriver(event) {
+    const element = event.currentTarget.closest(".race-session");
+    if (!element) return;
+    const sessionName = element.getElementsByClassName("race-session-name")[0].innerText.trim();
+    if (!sessionName) return;
+    const driverName = document.getElementById("raceDriverName").value.trim();
+    const car = document.getElementById("cars").value;
+    if(driverName) {
+        socket.emit('raceSession:driver:add', { sessionName: sessionName, driver: {name: driverName, carNumber: 1} });
+    }
+    document.getElementById("raceDriverName").value = "";
 }
 
 socket.on('login', (msg) => {
@@ -258,12 +329,15 @@ socket.on('raceSession:create:success', (raceSession) => {
 socket.on('raceSession:get:success', (raceSession) => {
     const raceSessionName = raceSession.sessionName;
     const allInnerBoxes = document.querySelectorAll('.inner-box');
+
     for (const box of allInnerBoxes) {
         const p = box.querySelector('p');
         if (p && p.textContent.trim() === raceSessionName) {
-            // Prevent duplicates
-            if (!box.nextElementSibling || !box.nextElementSibling.classList.contains('drivers-container')) {
-                const form = createRaceDriversBox();
+            const nextElement = box.nextElementSibling;
+            if (nextElement && nextElement.classList.contains('drivers-container')) {
+                nextElement.remove();
+            } else {
+                const form = createRaceDriversBox(raceSession.drivers);
                 box.insertAdjacentElement('afterend', form);
             }
             break;

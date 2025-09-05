@@ -41,6 +41,7 @@ p {
     font-weight: bold;
     font-size: 22px;
     text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 a:link {
@@ -193,7 +194,6 @@ input[type=password] {
 
 .inner-box-small {
     position: absolute;
-    top: -5px;
     right: -5px;
     width: 80px;
     height: 76px;
@@ -203,6 +203,12 @@ input[type=password] {
 .icon {
     width: 60px;
     height: 56px;
+    padding: 10px;
+}
+
+.icon-small {
+    width: 40px;
+    height: 38px;
     padding: 10px;
 }
 
@@ -233,4 +239,13 @@ img.flip {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.driver-number {
+    width: 55px;
+    height: 56px;
+    top: 0px;
+    left: -5px;
+    border: 0px;
+    border-right: 5px solid #88722e;
 }
