@@ -298,6 +298,76 @@ function addDriver(event) {
     document.getElementById("raceDriverName").value = "";
 }
 
+function createRaceDriverBox(raceSessionName, driverName, carNumber) {
+    const raceSessionElements = document.querySelectorAll(".race-session");
+    let foundElement = null;
+
+    for (const element of raceSessionElements) {
+        const sessionNameEl = element.querySelector(".race-session-name");
+        if (!sessionNameEl) continue;
+
+        const sessionName = sessionNameEl.innerText;
+        if (sessionName.trim().toLowerCase() === raceSessionName.trim().toLowerCase()) {
+            foundElement = element;
+            break;
+        }
+    }
+
+    if (!foundElement) {
+        console.warn("No race session found with name:", raceSessionName);
+        return;
+    }
+
+    const driversContainer = foundElement.querySelector(".drivers-container");
+    if (!driversContainer) {
+        console.warn("No .drivers-container found inside session:", raceSessionName);
+        return;
+    }
+
+    const driverItem = document.createElement('div');
+    driverItem.className = "drivers-box";
+
+    const nameText = document.createElement('p');
+    nameText.textContent = `${driverName} - Car ${carNumber}`;
+    nameText.style.fontSize = '18px';
+    driverItem.appendChild(nameText);
+
+    const numberBox = document.createElement('div');
+    numberBox.className = 'inner-box-small driver-number';
+
+    const numberText = document.createElement('p');
+    numberText.textContent = carNumber; // Corrected!
+    numberText.style.fontSize = '18px';
+    numberBox.appendChild(numberText);
+    driverItem.appendChild(numberBox);
+
+    const deleteBox = document.createElement('div');
+    deleteBox.className = 'delete inner-box-small';
+    deleteBox.style.height = '55px';
+    deleteBox.style.width = '60px';
+
+    const deleteImg = document.createElement('img');
+    deleteImg.className = 'icon-small';
+    deleteImg.src = '/img/deleteIcon.png';
+    deleteBox.appendChild(deleteImg);
+    driverItem.appendChild(deleteBox);
+
+    const editBox = document.createElement('div');
+    editBox.className = 'delete inner-box-small';
+    editBox.style.height = '55px';
+    editBox.style.width = '60px';
+    editBox.style.right = '60px';
+
+    const editImg = document.createElement('img');
+    editImg.className = 'icon-small';
+    editImg.src = '/img/editIcon.png';
+    editBox.appendChild(editImg);
+    driverItem.appendChild(editBox);
+
+    // Finally append it
+    driversContainer.appendChild(driverItem);
+}
+
 socket.on('login', (msg) => {
     const input = document.getElementById("token");
     const persona = msg.persona;
@@ -347,4 +417,11 @@ socket.on('raceSession:get:success', (raceSession) => {
 
 socket.on('raceSession:delete:success', (raceSession) => {
     deleteRaceBox(raceSession.sessionName);
+});
+
+socket.on('raceSessionDriver:add:success', (raceSession) => {
+    const sessionName = raceSession.sessionName;
+    const driverName = raceSession.driverName;
+    const carNumber = raceSession.carNumber;
+    createRaceDriverBox(sessionName, driverName, carNumber);
 });

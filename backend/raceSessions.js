@@ -66,6 +66,7 @@ export function raceSessions(io, socket) {
     });
 
     socket.on('raceSession:driver:add', (raceSessionDriver) => {
+        //TODO DUPLICATE NAMES ADD CAR
         //CHECK FOR AUTHORIZATION
         if(!isLoggedIn(socket, 'receptionist')){
             socket.emit('raceSession:driver:add:failure', {error: 'User Is Not Logged into receptionist.'});
@@ -101,7 +102,8 @@ export function raceSessions(io, socket) {
             fastestLap: null,
             currentLap: 0
         });
-        io.to('receptionist').emit('raceSessionDriver:add:success', session);
+        const raceDriver = {sessionName: sessionName, driverName: raceSessionDriver.driver.name, carNumber: availableCarNumber};
+        io.to('receptionist').emit('raceSessionDriver:add:success', raceDriver);
     });
 
 }
