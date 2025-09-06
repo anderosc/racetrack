@@ -71,11 +71,12 @@ function buildReceptionistPage() {
 }
 
 function createRaceSession() {
-    const input = document.getElementById("raceSessionName").value;
-    if (input) {
-        socket.emit('raceSession:create', { sessionName: input }); //, drivers: []
+    const input = document.getElementById("raceSessionName");
+    const sessionName = input.value;
+    if (sessionName) {
+        socket.emit('raceSession:create', { sessionName: sessionName });
+        input.value = "";
     }
-    input.value = "";
 }
 
 function createRaceBox(raceName) {
@@ -178,6 +179,7 @@ function createRaceDriversBox(drivers) {
     input.type = 'text';
     input.placeholder = "Enter driver's name";
     input.id = 'raceDriverName';
+    input.className = 'race-driver-name';
     input.required = true;
 
     // Create label and its inner paragraph
@@ -290,12 +292,14 @@ function addDriver(event) {
     if (!element) return;
     const sessionName = element.getElementsByClassName("race-session-name")[0].innerText.trim();
     if (!sessionName) return;
-    const driverName = document.getElementById("raceDriverName").value.trim();
-    const car = document.getElementById("cars").value;
+    //element.querySelector(".raceDriverName").value.trim();//
+    const driverName = element.querySelector("#raceDriverName").value.trim();
+    console.log(driverName);
+    //const car = document.getElementById("cars").value;
     if(driverName) {
         socket.emit('raceSession:driver:add', { sessionName: sessionName, driver: {name: driverName, carNumber: 1} });
     }
-    document.getElementById("raceDriverName").value = "";
+
 }
 
 function createRaceDriverBox(raceSessionName, driverName, carNumber) {
