@@ -292,14 +292,12 @@ function addDriver(event) {
     if (!element) return;
     const sessionName = element.getElementsByClassName("race-session-name")[0].innerText.trim();
     if (!sessionName) return;
-    //element.querySelector(".raceDriverName").value.trim();//
     const driverName = element.querySelector("#raceDriverName").value.trim();
-    console.log(driverName);
     //const car = document.getElementById("cars").value;
     if(driverName) {
         socket.emit('raceSession:driver:add', { sessionName: sessionName, driver: {name: driverName, carNumber: 1} });
     }
-
+    element.querySelector("#raceDriverName").value = "";
 }
 
 function createRaceDriverBox(raceSessionName, driverName, carNumber) {
@@ -318,13 +316,11 @@ function createRaceDriverBox(raceSessionName, driverName, carNumber) {
     }
 
     if (!foundElement) {
-        console.warn("No race session found with name:", raceSessionName);
         return;
     }
 
     const driversContainer = foundElement.querySelector(".drivers-container");
     if (!driversContainer) {
-        console.warn("No .drivers-container found inside session:", raceSessionName);
         return;
     }
 
@@ -423,7 +419,7 @@ socket.on('raceSession:delete:success', (raceSession) => {
     deleteRaceBox(raceSession.sessionName);
 });
 
-socket.on('raceSessionDriver:add:success', (raceSession) => {
+socket.on('raceSession:driver:add:success', (raceSession) => {
     const sessionName = raceSession.sessionName;
     const driverName = raceSession.driverName;
     const carNumber = raceSession.carNumber;

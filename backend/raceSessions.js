@@ -32,7 +32,16 @@ export function raceSessions(io, socket) {
             socket.emit('raceSession:create:failure', {error: 'User is not logged into receptionist.'});
             return;
         }
-        //TODO CHECK FOR DUPLICATE NAME
+        //CHECK FOR DUPLICATE SESSION NAME
+        const duplicate = raceTrackState.upComingRaces.some(
+            session => session.sessionName.toLowerCase() === nextRaceSession.sessionName.toLowerCase()
+        );
+
+        if (duplicate) {
+            socket.emit('raceSession:create:failure', { error: 'A session with this name already exists.' });
+            return;
+        }
+
         raceTrackState.upComingRaces.push(
             {
                 sessionName : nextRaceSession.sessionName,
@@ -66,7 +75,7 @@ export function raceSessions(io, socket) {
     });
 
     socket.on('raceSession:driver:add', (raceSessionDriver) => {
-        //TODO DUPLICATE NAMES ADD CAR
+        //TODO ADD CUSTOM CAR...
         //CHECK FOR AUTHORIZATION
         if(!isLoggedIn(socket, 'receptionist')){
             socket.emit('raceSession:driver:add:failure', {error: 'User Is Not Logged into receptionist.'});
@@ -79,6 +88,16 @@ export function raceSessions(io, socket) {
             console.log(`Session "${sessionName}" not found.`);
             return;
         }
+
+        const isDuplicateDriver = session.drivers.some(
+            driver => driver.name.trim().toLowerCase() === raceSessionDriver.driver.name.trim().toLowerCase()
+        );
+
+        if (isDuplicateDriver) {
+            socket.emit('raceSession:driver:add:failure', { error: 'Driver with this name already exists in the session.' });
+            return;
+        }
+
         // Check current car numbers used in this session
         const usedCarNumbers = session.drivers.map(driver => driver.carNumber);
         // Find the first available car number (1 to 8)
@@ -91,19 +110,18 @@ export function raceSessions(io, socket) {
         }
         // If no car numbers available
         if (!availableCarNumber) {
-            //console.log(`No available car numbers in session "${sessionName}".`);
-            socket.emit('raceSessionDriver:add:failure', {error: 'No available car number.'});
+            socket.emit('raceSession:driver:add:failure', {error: 'No available car number.'});
             return;
         }
         // Add the driver to the session
         session.drivers.push({
-            name: raceSessionDriver.driver.name,
+            name: raceSessionDriver.driver.name.trim(),
             carNumber: availableCarNumber,
             fastestLap: null,
             currentLap: 0
         });
         const raceDriver = {sessionName: sessionName, driverName: raceSessionDriver.driver.name, carNumber: availableCarNumber};
-        io.to('receptionist').emit('raceSessionDriver:add:success', raceDriver);
+        io.to('receptionist').emit('raceSession:driver:add:success', raceDriver);
     });
 
 }
