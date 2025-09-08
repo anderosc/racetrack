@@ -121,6 +121,8 @@ export function raceSessions(io, socket) {
             currentLap: 0
         });
         const raceDriver = {sessionName: sessionName, driverName: raceSessionDriver.driver.name, carNumber: availableCarNumber};
+        raceTrackState.upComingRaces.push(raceDriver)
+        io.emit("race:init:update", raceTrackState);
         io.to('receptionist').emit('raceSession:driver:add:success', raceDriver);
     });
 
