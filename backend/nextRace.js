@@ -5,6 +5,5 @@ export function nextRaceLogic(io, socket) {
     // Update next race session
 socket.on("state:get", () => {
     io.emit("state:update", raceTrackState);
-    console.log(raceTrackState.upComingRaces[0])
 });
 }
