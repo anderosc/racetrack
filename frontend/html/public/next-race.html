@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Next Race</title>
-  <link rel="stylesheet" type="text/css" href="/css/public/main.css">
+  <link rel="stylesheet" type="text/css" href="/css/public/next-race.css">
 
 </head>
 <body>
@@ -11,37 +11,44 @@
 
   <div>
     <h1>Next Race</h1>
-    <div>
-      <div id="nextSession"></div>
-      <div id="nextDrivers"> </div>
-
-      <div id="err" style="display: none;">No upcoming races!</div>
+    <div id="main">
+      <div id="nextSession"> </div>
+      <table id="table"> 
+        <thead> 
+          <tr> 
+            <th>Driver</th> 
+            <th>Car Number</th> 
+          </tr> </thead> 
+        <tbody id="tableBody"> 
+        </tbody> 
+      </table>
     </div>
+    <div id="err" style="display: none;">No upcoming races!</div>
+
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script type="module">
     const socket = io();
 
-    const name = document.getElementById("name");
-    const date = document.getElementById("date");
-    const track = document.getElementById("track");
+    const body =document.getElementById("main")
     const err = document.getElementById("err");
-    const nextDrivers = document.getElementById("nextDrivers");
-    const nextSession = document.getElementById("nextSession")
+    const nextSession = document.getElementById("nextSession");
+
 
 
   function updateNextRace(state) {
+    // First check if the data is malformed or there isnt any upcomming races.
     if(state === undefined){
         return;
     }
-    // console.log(state)
     if(!state?.upComingRaces || state.upComingRaces.length === 0){
       err.style.display = "block"
       nextSession.innerHTML = "";
-      nextDrivers.innerHTML = "";
+      body.innerHTML = "";
       return;
     }
+    
     const race = state.upComingRaces[0];
     if (!race?.sessionName) {
       err.style.display = "block";
@@ -50,25 +57,25 @@
 
     err.style.display = "none";
     nextSession.innerHTML = "Next Session: " + race.sessionName;
-    nextDrivers.innerHTML = race.drivers
-    .map(driver => `<div>${driver.name} (Car ${driver.carNumber})</div>`)
-    .join("");
+
+    const tableBody = document.getElementById("tableBody");
+
+    //Map the driver and car number as table into HTML tbody and join table rows.
+    const tableRows = race.drivers
+        .map(driver => `<tr><td>${driver.name}</td><td>${driver.carNumber}</td></tr>`).join("");
+
+    tableBody.innerHTML = tableRows;
   }
 
-    // If connected, update data
+    // If connected, get update
     socket.on("connect", () => {
       socket.emit("state:get");
     });
 
-    // Take data and call function to update ui
+    // Take data and call function to update ui. Listen to future updates.
     socket.on("state:update", (state) => {
-      console.log(state)
       updateNextRace(state);
     });
-
-
-
-
 
   </script>
 </body>
