@@ -4,6 +4,6 @@ import { raceTrackState } from './state.js';
 export function nextRaceLogic(io, socket) {
     // Update next race session
 socket.on("state:get", () => {
-    io.emit("state:update", raceTrackState);
+    io.emit("race:update", raceTrackState);
 });
 }

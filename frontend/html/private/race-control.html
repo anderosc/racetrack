@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Race Control</title>
-    <link rel="stylesheet" type="text/css" href="/css/public/main.css">
+    <link rel="stylesheet" type="text/css" href="/css/private/race-control.css">
 </head>
 <body>
 
@@ -15,34 +15,25 @@
     <button id="loginBtn">Login</button>
     <p id="loginErr" style="color:red; display:none;">Incorrect key</p>
   </div>
-
-
   <div id="raceControl" style="display:none;">
     <h1>Race Control</h1>
-    
     <div id="current-session">
-      <h2>Current Session</h2>
-      <div id="raceTimer">Timer: --:--</div>
+      <h2 id="session">Current Session </h2>
+      <div id="raceTimer">Timer :<div id="minutes"> 0 </div> <div id="minutes"> 0 </div></div>
     </div>
-
     <div id="controls">
-
-      
       <div> 
         <button id="startRaceBtn">Start Race</button>
       </div>
-
       <div id="raceControls">
         <button id="safe" >Safe</button>
         <button id="hazard" >Hazard</button>
         <button id="danger" >Danger</button>
         <button id="finish"  >Finish</button>
       </div>
-
       <div>
         <button id="endSessionBtn">End Session</button>
       </div>
-
     </div>
     <br>
     <br>
@@ -66,6 +57,7 @@
     const initRace = document.getElementById("initRace");
     const startRaceBtn = document.getElementById("startRaceBtn");
     const endSessionBtn = document.getElementById("endSessionBtn");
+    const session = document.getElementById("session");
     const safeBtn = document.getElementById("safe");
     const hazardBtn = document.getElementById("hazard");
     const dangerBtn = document.getElementById("danger");
@@ -84,26 +76,20 @@
 function renderRaceState(state) {
 
   console.log("Got state from server:", state);
-  if(state.upComingRaces.length == 0 || state.upComingRaces == null){
-    startRaceBtn.style.display = "none";
-    raceControls.style.display = "none";
-    endSessionBtn.style.display = "none";
-    errTag.innerHTML ="No upcoming races"
-    errTag.style.display = "block"
-    return
-  }
 
+  // Check if there is ongoing race and start it again
   if (state.currentRace?.isStarted && state.currentRace.durationSeconds > 0) {
     startRaceBtn.style.display = "none";
     raceControls.style.display = "block";
     endSessionBtn.style.display = "none";
     errTag.style.display = "none"
-    console.log("this one went through")
+    session.style.display = "block"
+    session.innerHTML = `Current session :` + state.currentRace.sessionName
      if (!timerInterval) {
             timerInterval = setInterval(() => {
                 if (state.currentRace.durationSeconds > 0) {
                     state.currentRace.durationSeconds--;
-                    raceTimer.innerHTML = `Timer: ${formatTime(state.currentRace.durationSeconds)}`;
+                    raceTimer.innerHTML = `Timer : ${formatTime(state.currentRace.durationSeconds)}`;
                 } else {
                     clearInterval(timerInterval);
                     timerInterval = null;
@@ -112,43 +98,56 @@ function renderRaceState(state) {
                       endSessionBtn.style.display = "block"
                       raceControls.style.display = "none"
                 }
-                console.log("this is the state" , state)
+                // console.log("this is the state" , state)
             }, 1000);
         }
-
+      return
   } else if (state.currentRace?.raceMode === "Finish") {
 
     startRaceBtn.style.display = "none"; 
     raceControls.style.display = "none";
     endSessionBtn.style.display = "block";
     errTag.style.display = "none"
-
+    session.style.display = "block"
+    session.innerHTML = `Current session :` + state.currentRace.sessionName
+    return
   } else if (state.currentRace?.raceMode === "Danger" && state.currentRace?.isEnded == true  ) {
+    console.log("here 15231")
+
       if(state.upComingRaces.length == 0 || state.upComingRaces == null){
         startRaceBtn.style.display = "none";
         raceControls.style.display = "none";
         endSessionBtn.style.display = "none";
+        session.style.display = "none"
+
         errTag.innerHTML ="No upcoming races"
         errTag.style.display = "block"
           return
       } else { 
+    console.log("here 14")
+
         startRaceBtn.style.display = "block";
+        session.style.display = "none"
+
         raceControls.style.display = "none";
         endSessionBtn.style.display = "none";
         errTag.style.display = "none"
+        return
     }
   } else{
+    console.log("here 12")
 
     startRaceBtn.style.display = "block"
     raceControls.style.display = "none";
     endSessionBtn.style.display = "none";
     errTag.style.display = "none"
-
+    return
   }
+
 
 }
 
-socket.on("race:init:update", renderRaceState);
+socket.on("race:update", renderRaceState);
 
 
 // Login click
@@ -181,38 +180,6 @@ socket.on("race:error", (errorMessage) => {
 });
 
 
-
-    socket.on("race:update",(state) =>{
-      const race = state.currentRace
-
-      console.log("this is state" , state)
-    // socket.on("race:update", raceTrackState)
-
-    startRaceBtn.style.display = "none"
-    raceControls.style.display = "block"
-    endSessionBtn.style.display = "none"
-    if (race.durationSeconds !== undefined) {
-        raceSeconds = race.durationSeconds;
-      // console.log(raceSeconds)
-
-        if (!timerInterval) {
-            timerInterval = setInterval(() => {
-                if (raceSeconds > 0) {
-                    raceSeconds--;
-                    raceTimer.innerHTML = `Timer: ${formatTime(raceSeconds)}`;
-                } else {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                      socket.emit("race:finish");
-                      clearInterval(timerInterval);
-                      endSessionBtn.style.display = "block"
-                      raceControls.style.display = "none"
-                }
-                console.log(state)
-            }, 1000);
-        }
-    }
-  })
     
 // update timer inital value if it started
 
@@ -232,7 +199,7 @@ socket.on("race:error", (errorMessage) => {
   endSessionBtn.addEventListener("click", (state) => {
     socket.emit("race:endSession", state);
     clearInterval(timerInterval);
-    raceTimer.innerHTML = "Timer: --:--"
+    raceTimer.innerHTML = `Timer : <div id="minutes"> ` + 0 +` </div>`  + ':' + `<div id="minutes"> ` + 0 +` </div>`
     socket.emit("race:init")
 
     // renderDrivers(state);
@@ -258,7 +225,8 @@ socket.on("race:error", (errorMessage) => {
     if (s < 10) {
       s = '0' + s;
     }
-      return m + ':' + s;
+    //return divs with minutes and seconds 
+      return ` <div id="minutes"> ` +m +` </div>`  + ':' + `<div id="minutes"> ` + s +` </div>`;
   }
 
   </script>
