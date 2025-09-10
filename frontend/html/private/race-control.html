@@ -2,21 +2,51 @@
 <html>
 <head>
   <title>Race Control</title>
-    <link rel="stylesheet" type="text/css" href="/css/private/race-control.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/css/public/main.css">
+  <link rel="stylesheet" type="text/css" href="/css/private/race-control.css">
 </head>
 <body>
 
   <!-- login
    TODO, shows the page before actually logged in hehe
     -->
-  <div id="loginScreen">
+   <!-- <div id="loginScreen">
     <h2>Safety Official Login</h2>
     <input type="password" id="accessKey" placeholder="Enter access key">
     <button id="loginBtn">Login</button>
     <p id="loginErr" style="color:red; display:none;">Incorrect key</p>
+  </div>-->
+  <div id="navbar" class="left">
+    <div class="button" style="height: 40px;"><p style="font-size: 14px;">< Hide NavBar</p></div></a>
+    <a href="/front-desk"><div class="button"><p>Front Desk</p></div></a>
+    <a href="/race-control"><div class="button"><p>Race Control</p></div></a>
+      <a href="/lap-line-tracker"><div class="button"><p>Lap-line Tracker</p></div></a>
+      <a href="/leader-board"><div class="button"><p>Leader Board</p></div></a>
+      <a href="/next-race"><div class="button"><p>Next Race</p></div></a>
+      <a href="/race-countdown"><div class="button"><p>Race Countdown</p></div></a>
+      <a href="/race-flags"><div class="button"><p>Race Flag</p></div></a>
   </div>
+  <div id="content" class="right">
+      <div id="showNavBarBtn" class="showNavBar">
+          <div class="navBarBox"></div>
+          <div class="navBarBox"></div>
+          <div class="navBarBox"></div>
+      </div>
+      <div id="loginScreen" class="loginbox centerDiv">
+          <label for="token"><p>Enter Race Control Key</p></label>
+          <input type="password" placeholder="Enter Race Control Key" id="accessKey"></input>
+          <button id="loginBtn" class="loginbtn" type="submit"><p>Login</p></button>
+          <div id="loginErr" class="loginerror"><p>Login Failed, please try again.</p></div>
+      </div>
   <div id="raceControl" style="display:none;">
-    <h1>Race Control</h1>
+    <div class="content-box">
+      <p>Race Control</p>
+      <div id="logout" class="logout">
+          <p>Logout</p>
+      </div>
+    </div>
     <div id="current-session">
       <h2 id="session">Current Session </h2>
       <div id="raceTimer">Timer :<div id="minutes"> 0 </div> <div id="minutes"> 0 </div></div>
@@ -42,8 +72,9 @@
     </div>
     <p id="err" style="color:red; display:none;"></p>
   </div>
-
+</div>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/public/navBarToggle.js"></script>
   <script>
     const socket = io();
 
@@ -68,8 +99,15 @@
     const raceTimer = document.getElementById("raceTimer");
     const currentDrivers = document.getElementById("currentDrivers");
 
+    document.getElementById("logout").addEventListener("click", logout);
+
     let timerInterval = null; 
     let raceSeconds = 0;
+
+    function logout() {
+      document.cookie = "raceControl_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+      location.reload();
+    }
 
     // let data = {}
 // Listen serverist tulevat state'i
@@ -152,21 +190,31 @@ socket.on("race:update", renderRaceState);
 
 // Login click
 loginBtn.addEventListener("click", () => {
-    socket.emit("login", { persona: "RaceControl", token: keyInput.value });
+  if (keyInput.value) {
+    socket.emit("login", { persona: "raceControl", token: keyInput.value });
+  }
 });
 
 socket.on("login", (res) => {
-    if (res.status) {
+
+  const persona = res.persona;
+  const status = res.status;
+    if(persona == "raceControl") {
+      if (status) {
+        if(res.cookie != true) {
+          document.cookie = "raceControl_token=" +  keyInput.value + "; path=/";
+        }
         loginScreen.style.display = "none";
         uiScreen.style.display = "block";
         loginErr.style.display = "none";
 
         // Emit init after loginit
         socket.emit("race:init");
-    } else {
+      } else {
         loginErr.style.display = "block";
-
-    }
+        keyInput.value = "";
+      }
+  }
 });
 
 socket.on("race:error", (errorMessage) => {

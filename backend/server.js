@@ -19,12 +19,9 @@ const server = createServer(app);
 // const port = process.env.PORT;
 const port = 3000;
 
-
 const io = new Server(server, {
   connectionStateRecovery: {}
 });
-
-let RECEPTIONIST_SESSION_TOKEN = 'receptionist_token';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -71,43 +68,47 @@ app.get('/race-flags', (req, res) => {
 //Server Logic
 io.on('connection', (socket) => {
 
-    //HANDLE LOGIN SESSIONS
+    //HANDLE LOGIN FROM COOKIE
     const rawCookie = socket.handshake.headers.cookie;
     if (rawCookie) {
         const parsedCookies = cookie.parse(rawCookie);
         const receptionistToken = parsedCookies.receptionist_token;
-        RECEPTIONIST_SESSION_TOKEN = receptionistToken;
-        if(receptionistToken) {
-            if (receptionistToken === process.env.RECEPTIONIST_KEY) {
-                socket.emit('login', { persona: 'receptionist', status: true, cookie: true });
-                socket.join('receptionist');
-                socket.emit('raceList', raceTrackState.upComingRaces);
-            }
+        const raceControlToken = parsedCookies.raceControl_token;
+        if (receptionistToken === process.env.RECEPTIONIST_KEY) {
+            socket.emit('login', { persona: 'receptionist', status: true, cookie: true });
+            socket.join('receptionist');
+            socket.emit('raceList', raceTrackState.upComingRaces);
+        }
+        if (raceControlToken === process.env.SAFETY_KEY) {
+            socket.emit('login', { persona: 'raceControl', status: true, cookie: true });
+            socket.join('raceControl');
         }
     }
 
     // HANDLE LOGIN LOGIC
     socket.on('login', (msg) => {
+
         const persona = msg.persona;
         const token = msg.token;
+
         if(persona === "receptionist") {
             if(token === process.env.RECEPTIONIST_KEY) {
                 socket.emit('login', { persona: persona, status: true });
                 socket.join('receptionist');
                 socket.emit('raceList', raceTrackState.upComingRaces);
             }else {
-                // Wait 0.5 Sec
                 setTimeout(() => {
                     socket.emit('login', { persona: persona, status: false });
                 }, 500);
             }
         }
-        if(persona === "RaceControl") {
+        if(persona === "raceControl") {
             if(token === process.env.SAFETY_KEY) {
-                socket.emit('login', { persona, status: true });
+                socket.emit('login', { persona: persona, status: true });
+                socket.join('raceControl');
             } else {
             setTimeout(() => { 
-                socket.emit('login', { persona, status: false });
+                socket.emit('login', { persona: persona, status: false });
             }, 500);
         }
     }
