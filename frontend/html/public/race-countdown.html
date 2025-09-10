@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title> Race Countdown</title>
-  <link rel="stylesheet" type="text/css" href="/css/public/next-race.css">
+  <link rel="stylesheet" type="text/css" href="/css/public/race-countdown.css">
 
 </head>
 <body>
@@ -11,8 +11,8 @@
 
   <div>
     <div id="current-session">
-      <h2>Current Session</h2>
-      <div id="raceTimer">Timer: --:--</div>
+      <h2>Race Countdown</h2>
+      <div id="raceTimer"> <div id="minutes"> 0 </div> : <div id="minutes"> 0 </div> </div>
     </div>
     <div id="err" style="display: none;">No ongoing races!</div>
 
@@ -51,7 +51,7 @@
             console.log("got the update")
             clearInterval(timerInterval);
             timerInterval = null;
-            raceTimer.innerHTML = "Timer: --:--"
+            raceTimer.innerHTML = `<div id="minutes"> ` + 0 +` </div>`  + ':' + `<div id="minutes"> ` + 0 +` </div>`
         }
     }
 
@@ -66,7 +66,7 @@
         if (s < 10) {
             s = '0' + s;
         }
-            return m + ':' + s;
+            return `<div id="minutes"> ` +m +` </div>`  + ':' + `<div id="minutes"> ` + s +` </div>`;
     }
 
   </script>

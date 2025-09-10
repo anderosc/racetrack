@@ -34,12 +34,6 @@ export function raceControl(io, socket){
   socket.on('race:start', () => {
   // Timer loop - updates every second. 60 second development, 600 for production
 
-  if (!raceTrackState.upComingRaces || raceTrackState.upComingRaces.length === 0) {
-    console.log("No upcoming races!");
-  } else if (!raceTrackState.upComingRaces[0].drivers || raceTrackState.upComingRaces[0].drivers.length === 0) {
-    console.log("No drivers in the next race!");
-  }
-
     assignNextRace()
     saveState();
     // console.log(state)
