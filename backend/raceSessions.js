@@ -50,6 +50,7 @@ export function raceSessions(io, socket) {
             }
         )
         io.to('receptionist').emit('raceSession:create:success', nextRaceSession);
+        io.emit("race:update", raceTrackState);
     });
 
     socket.on('raceSession:delete', (raceSession) => {
@@ -69,6 +70,7 @@ export function raceSessions(io, socket) {
 
         if (wasDeleted) {
             io.to('receptionist').emit('raceSession:delete:success', raceSession);
+            io.emit("race:update", raceTrackState);
         } else {
             //console.log(`No matching session found to delete: ${RaceSession.sessionName}`);
         }
@@ -121,8 +123,7 @@ export function raceSessions(io, socket) {
             currentLap: 0
         });
         const raceDriver = {sessionName: sessionName, driverName: raceSessionDriver.driver.name, carNumber: availableCarNumber};
-        raceTrackState.upComingRaces.push(raceDriver)
-        io.emit("race:init:update", raceTrackState);
+        io.emit("race:update", raceTrackState);
         io.to('receptionist').emit('raceSession:driver:add:success', raceDriver);
     });
 

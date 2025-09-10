@@ -28,16 +28,18 @@ export function raceControl(io, socket){
   
 
   socket.on("race:init", () =>{
-    socket.emit("race:init:update", raceTrackState)
+    socket.emit("race:update", raceTrackState)
   });
 
   socket.on('race:start', () => {
   // Timer loop - updates every second. 60 second development, 600 for production
 
-  if(raceTrackState.upComingRaces[0].drivers.length === 0){
-    socket.emit("race:error", "Drivers not assigned to next race");
-    return;
+  if (!raceTrackState.upComingRaces || raceTrackState.upComingRaces.length === 0) {
+    console.log("No upcoming races!");
+  } else if (!raceTrackState.upComingRaces[0].drivers || raceTrackState.upComingRaces[0].drivers.length === 0) {
+    console.log("No drivers in the next race!");
   }
+
     assignNextRace()
     saveState();
     // console.log(state)
@@ -71,15 +73,15 @@ export function raceControl(io, socket){
   //Change modes, update them
   socket.on("race:safe", () => {
     raceTrackState.currentRace.raceMode = "Safe";
-    io.emit("state:update", raceTrackState);
+    io.emit("race:update", raceTrackState);
   })
   socket.on("race:hazard", () => {
     raceTrackState.currentRace.raceMode = "Hazard";
-    io.emit("state:update", raceTrackState);
+    io.emit("race:update", raceTrackState);
   })
   socket.on("race:danger", () => {
     raceTrackState.currentRace.raceMode = "Danger";
-    io.emit("state:update", raceTrackState);
+    io.emit("race:update", raceTrackState);
   })
 
   // End session for all.
@@ -87,7 +89,7 @@ export function raceControl(io, socket){
     raceTrackState.currentRace.raceMode = "Danger"
     // raceTrackState.raceHistory.push(raceTrackState.currentRace);
     raceTrackState.currentRace.isEnded = true;
-    io.emit("state:update",  raceTrackState);
+    io.emit("race:update",  raceTrackState);
   })
 
   //Finish session
@@ -97,8 +99,9 @@ export function raceControl(io, socket){
   }
   timerInterval = null;
   raceTrackState.currentRace.durationSeconds = 0;
+  raceTrackState.currentRace.raceMode = "Finish"
   //Push currentrace to History array and set current race to null.
-  io.emit("state:update",  raceTrackState);
+  io.emit("race:update",  raceTrackState);
   });
 
 }

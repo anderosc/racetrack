@@ -84,21 +84,14 @@
 function renderRaceState(state) {
 
   console.log("Got state from server:", state);
-  if(state.upComingRaces.length == 0 || state.upComingRaces == null){
-    startRaceBtn.style.display = "none";
-    raceControls.style.display = "none";
-    endSessionBtn.style.display = "none";
-    errTag.innerHTML ="No upcoming races"
-    errTag.style.display = "block"
-    return
-  }
 
+  // Check if there is ongoing race and start it again
   if (state.currentRace?.isStarted && state.currentRace.durationSeconds > 0) {
     startRaceBtn.style.display = "none";
     raceControls.style.display = "block";
     endSessionBtn.style.display = "none";
     errTag.style.display = "none"
-    console.log("this one went through")
+    console.log("here 1421")
      if (!timerInterval) {
             timerInterval = setInterval(() => {
                 if (state.currentRace.durationSeconds > 0) {
@@ -112,18 +105,21 @@ function renderRaceState(state) {
                       endSessionBtn.style.display = "block"
                       raceControls.style.display = "none"
                 }
-                console.log("this is the state" , state)
+                // console.log("this is the state" , state)
             }, 1000);
         }
-
+      return
   } else if (state.currentRace?.raceMode === "Finish") {
+    console.log("here 11")
 
     startRaceBtn.style.display = "none"; 
     raceControls.style.display = "none";
     endSessionBtn.style.display = "block";
     errTag.style.display = "none"
-
+    return
   } else if (state.currentRace?.raceMode === "Danger" && state.currentRace?.isEnded == true  ) {
+    console.log("here 15231")
+
       if(state.upComingRaces.length == 0 || state.upComingRaces == null){
         startRaceBtn.style.display = "none";
         raceControls.style.display = "none";
@@ -132,23 +128,37 @@ function renderRaceState(state) {
         errTag.style.display = "block"
           return
       } else { 
+    console.log("here 14")
+
         startRaceBtn.style.display = "block";
         raceControls.style.display = "none";
         endSessionBtn.style.display = "none";
         errTag.style.display = "none"
+        return
     }
   } else{
+    console.log("here 12")
 
     startRaceBtn.style.display = "block"
     raceControls.style.display = "none";
     endSessionBtn.style.display = "none";
     errTag.style.display = "none"
+    return
+  }
+    if(state.upComingRaces.length == 0 || state.upComingRaces == null){
+    console.log("here asd11")
 
+    startRaceBtn.style.display = "none";
+    raceControls.style.display = "none";
+    endSessionBtn.style.display = "none";
+    errTag.innerHTML ="No upcoming races"
+    errTag.style.display = "block"
+    return
   }
 
 }
 
-socket.on("race:init:update", renderRaceState);
+socket.on("race:update", renderRaceState);
 
 
 // Login click
@@ -182,37 +192,37 @@ socket.on("race:error", (errorMessage) => {
 
 
 
-    socket.on("race:update",(state) =>{
-      const race = state.currentRace
+  //   socket.on("race:update",(state) =>{
+  //     const race = state.currentRace
 
-      console.log("this is state" , state)
-    // socket.on("race:update", raceTrackState)
+  //     console.log("this is state" , state)
+  //   // socket.on("race:update", raceTrackState)
 
-    startRaceBtn.style.display = "none"
-    raceControls.style.display = "block"
-    endSessionBtn.style.display = "none"
-    if (race.durationSeconds !== undefined) {
-        raceSeconds = race.durationSeconds;
-      // console.log(raceSeconds)
+  //   startRaceBtn.style.display = "none"
+  //   raceControls.style.display = "block"
+  //   endSessionBtn.style.display = "none"
+  //   if (race.durationSeconds !== undefined) {
+  //       raceSeconds = race.durationSeconds;
+  //     // console.log(raceSeconds)
 
-        if (!timerInterval) {
-            timerInterval = setInterval(() => {
-                if (raceSeconds > 0) {
-                    raceSeconds--;
-                    raceTimer.innerHTML = `Timer: ${formatTime(raceSeconds)}`;
-                } else {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                      socket.emit("race:finish");
-                      clearInterval(timerInterval);
-                      endSessionBtn.style.display = "block"
-                      raceControls.style.display = "none"
-                }
-                console.log(state)
-            }, 1000);
-        }
-    }
-  })
+  //       if (!timerInterval) {
+  //           timerInterval = setInterval(() => {
+  //               if (raceSeconds > 0) {
+  //                   raceSeconds--;
+  //                   raceTimer.innerHTML = `Timer: ${formatTime(raceSeconds)}`;
+  //               } else {
+  //                   clearInterval(timerInterval);
+  //                   timerInterval = null;
+  //                     socket.emit("race:finish");
+  //                     clearInterval(timerInterval);
+  //                     endSessionBtn.style.display = "block"
+  //                     raceControls.style.display = "none"
+  //               }
+  //               console.log(state)
+  //           }, 1000);
+  //       }
+  //   }
+  // })
     
 // update timer inital value if it started
 

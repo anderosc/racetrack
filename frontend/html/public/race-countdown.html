@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title> Race Countdown</title>
+  <link rel="stylesheet" type="text/css" href="/css/public/next-race.css">
+
+</head>
+<body>
+
+
+  <div>
+    <div id="current-session">
+      <h2>Current Session</h2>
+      <div id="raceTimer">Timer: --:--</div>
+    </div>
+    <div id="err" style="display: none;">No ongoing races!</div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module">
+    const socket = io();
+    socket.emit("race:init");
+
+    const body =document.getElementById("current-session")
+    const err = document.getElementById("raceTimer");
+    const nextSession = document.getElementById("nextSession");
+
+    let timerInterval;
+    socket.on("race:update", renderRaceState);
+
+    function renderRaceState(state){
+        console.log(state)
+        console.log("its working")
+        if (state.currentRace?.isStarted && state.currentRace.durationSeconds >= 0 && state.currentRace?.raceMode !== "Finish") {
+            formatTime(state.currentRace.durationSeconds)
+            if(!timerInterval){
+                timerInterval = setInterval(() =>{
+                     if (state.currentRace.durationSeconds > 0) {
+                    state.currentRace.durationSeconds--;
+                    raceTimer.innerHTML = `Timer: ${formatTime(state.currentRace.durationSeconds)}`;
+                    } else {
+                    clearInterval(timerInterval);
+                        timerInterval = null;
+                        clearInterval(timerInterval);
+                    }
+                }, 1000)
+            }
+        } else if (state.currentRace?.raceMode === "Finish") {
+            console.log("got the update")
+            clearInterval(timerInterval);
+            timerInterval = null;
+            raceTimer.innerHTML = "Timer: --:--"
+        }
+    }
+
+
+        //remaining time from socket to seconds
+    function formatTime(seconds) {
+        let m = Math.floor(seconds / 60);
+        let s = seconds % 60;
+        if (m < 10) {
+            m = '0' + m;
+        }
+        if (s < 10) {
+            s = '0' + s;
+        }
+            return m + ':' + s;
+    }
+
+  </script>
+</body>
+</html>
