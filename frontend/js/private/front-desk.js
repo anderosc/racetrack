@@ -154,6 +154,24 @@ function deleteRaceBox(raceName) {
     });
 }
 
+function deleteRaceDriverBox(sessionName, driverName) {
+    const allDriverBoxes = document.querySelectorAll('.drivers-box');
+
+    allDriverBoxes.forEach(driverBox => {
+        const nameEl = driverBox.querySelector('.driverName');
+        const thisDriverName = nameEl?.textContent.trim().toLowerCase();
+        const thisSessionEl = driverBox.closest('.race-session')?.querySelector('.race-session-name');
+        const thisSessionName = thisSessionEl?.textContent.trim().toLowerCase();
+
+        if (
+            thisDriverName === driverName.trim().toLowerCase() &&
+            thisSessionName === sessionName.trim().toLowerCase()
+        ) {
+            driverBox.remove();
+        }
+    });
+}
+
 function editRaceSession(event) {
     const element = event.currentTarget.closest(".inner-box");
     if (!element) return;
@@ -233,11 +251,18 @@ function createRaceDriversBox(drivers) {
     drivers.forEach(element => {
         const driverItem = document.createElement('div');
         driverItem.className = "drivers-box";
-
         const nameText = document.createElement('p');
-        nameText.textContent = `${element.name} - Car ${element.carNumber}`;
+        nameText.className = "driverName";
+        nameText.textContent = element.name;
         nameText.style.fontSize = '18px';
+
+        const carNumberText = document.createElement('p');
+        carNumberText.className = "driverCarNumber";
+        carNumberText.textContent = " - Car " + element.carNumber;
+        carNumberText.style.fontSize = '18px';
+        
         driverItem.appendChild(nameText);
+        driverItem.appendChild(carNumberText);
 
         const numberBox = document.createElement('div');
         numberBox.className = 'inner-box-small driver-number';
@@ -252,6 +277,7 @@ function createRaceDriversBox(drivers) {
         deleteBox.className = 'delete inner-box-small';
         deleteBox.style.height = '55px';
         deleteBox.style.width = '60px';
+        deleteBox.addEventListener("click", removeDriver);
 
         const deleteImg = document.createElement('img');
         deleteImg.className = 'icon-small';
@@ -260,7 +286,7 @@ function createRaceDriversBox(drivers) {
         driverItem.appendChild(deleteBox);
 
         const editBox = document.createElement('div');
-        editBox.className = 'delete inner-box-small';
+        editBox.className = 'edit inner-box-small';
         editBox.style.height = '55px';
         editBox.style.width = '60px';
         editBox.style.right = '60px';
@@ -300,6 +326,21 @@ function addDriver(event) {
     element.querySelector("#raceDriverName").value = "";
 }
 
+function removeDriver(event) {
+    const element = event.currentTarget.closest(".drivers-box");
+    if (!element) return;
+    const element1 = event.currentTarget.closest(".race-session");
+    if (!element1) return;
+    const sessionName = element1.getElementsByClassName("race-session-name")[0].innerText.trim();
+    if (!sessionName) return;
+    const driverName = element.getElementsByClassName("driverName")[0].innerText.trim();
+    if (!driverName) return;
+    if(sessionName && driverName) {
+        socket.emit('raceSession:driver:remove', { sessionName: sessionName, driverName: driverName });
+    }
+}
+
+
 function createRaceDriverBox(raceSessionName, driverName, carNumber) {
     const raceSessionElements = document.querySelectorAll(".race-session");
     let foundElement = null;
@@ -326,11 +367,20 @@ function createRaceDriverBox(raceSessionName, driverName, carNumber) {
 
     const driverItem = document.createElement('div');
     driverItem.className = "drivers-box";
+    driverItem.dataset.raceSessionName = "test";
 
     const nameText = document.createElement('p');
-    nameText.textContent = `${driverName} - Car ${carNumber}`;
+    nameText.className = "driverName";
+    nameText.textContent = driverName;
     nameText.style.fontSize = '18px';
+
+    const carNumberText = document.createElement('p');
+    carNumberText.className = "driverCarNumber";
+    carNumberText.textContent = " - Car " + carNumber;
+    carNumberText.style.fontSize = '18px';
+
     driverItem.appendChild(nameText);
+    driverItem.appendChild(carNumberText);
 
     const numberBox = document.createElement('div');
     numberBox.className = 'inner-box-small driver-number';
@@ -338,6 +388,7 @@ function createRaceDriverBox(raceSessionName, driverName, carNumber) {
     const numberText = document.createElement('p');
     numberText.textContent = carNumber; // Corrected!
     numberText.style.fontSize = '18px';
+
     numberBox.appendChild(numberText);
     driverItem.appendChild(numberBox);
 
@@ -345,6 +396,7 @@ function createRaceDriverBox(raceSessionName, driverName, carNumber) {
     deleteBox.className = 'delete inner-box-small';
     deleteBox.style.height = '55px';
     deleteBox.style.width = '60px';
+    deleteBox.addEventListener("click", removeDriver);
 
     const deleteImg = document.createElement('img');
     deleteImg.className = 'icon-small';
@@ -424,4 +476,8 @@ socket.on('raceSession:driver:add:success', (raceSession) => {
     const driverName = raceSession.driverName;
     const carNumber = raceSession.carNumber;
     createRaceDriverBox(sessionName, driverName, carNumber);
+});
+
+socket.on('raceSession:driver:remove:success', ({ sessionName, driverName }) => {
+    deleteRaceDriverBox(sessionName, driverName);
 });

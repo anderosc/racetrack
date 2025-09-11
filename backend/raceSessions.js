@@ -25,7 +25,6 @@ export function raceSessions(io, socket) {
         }
     });
 
-
     socket.on('raceSession:create', (nextRaceSession) => {
         //CHECK FOR AUTHORIZATION
         if(!isLoggedIn(socket, 'receptionist')){
@@ -123,8 +122,47 @@ export function raceSessions(io, socket) {
             currentLap: 0
         });
         const raceDriver = {sessionName: sessionName, driverName: raceSessionDriver.driver.name, carNumber: availableCarNumber};
-        io.emit("race:update", raceTrackState);
         io.to('receptionist').emit('raceSession:driver:add:success', raceDriver);
+        io.emit("race:update", raceTrackState);
+    });
+
+    socket.on('raceSession:driver:remove', ({ sessionName, driverName }) => {
+        // Check if user is authorized (e.g., receptionist)
+        if (!isLoggedIn(socket, 'receptionist')) {
+            socket.emit('raceSession:driver:remove:failure', { error: 'User is not logged in as receptionist.' });
+            return;
+        }
+
+        const trimmedSessionName = sessionName.trim().toLowerCase();
+        const trimmedDriverName = driverName.trim().toLowerCase();
+
+        // Find the session
+        const session = raceTrackState.upComingRaces.find(
+            session => session.sessionName.trim().toLowerCase() === trimmedSessionName
+        );
+
+        if (!session) {
+            socket.emit('raceSession:driver:remove:failure', { error: `Session "${sessionName}" not found.` });
+            return;
+        }
+
+        // Find the driver index
+        const driverIndex = session.drivers.findIndex(
+            driver => driver.name.trim().toLowerCase() === trimmedDriverName
+        );
+
+        if (driverIndex === -1) {
+            socket.emit('raceSession:driver:remove:failure', { error: `Driver "${driverName}" not found in session.` });
+            return;
+        }
+
+        // Remove the driver from session
+        const removedDriver = session.drivers.splice(driverIndex, 1)[0];
+
+        // Emit success to relevant clients
+        io.to('receptionist').emit('raceSession:driver:remove:success', { sessionName: session.sessionName, driverName: removedDriver.name, carNumber: removedDriver.carNumber });
+
+        io.emit("race:update", raceTrackState);
     });
 
 }
