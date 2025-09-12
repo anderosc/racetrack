@@ -249,3 +249,48 @@ img.flip {
     border: 0px;
     border-right: 5px solid #88722e;
 }
+
+/* Error notification container */
+#error-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+/* Single error box */
+.error-box {
+  background-color: #f44336;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 5px;
+  min-width: 220px;
+  max-width: 300px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  position: relative;
+  opacity: 1;
+  animation: fadeOut 0.5s ease-out 4.5s forwards;
+}
+
+/* Close (X) button */
+.error-box .close-btn {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Fade out animation */
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}

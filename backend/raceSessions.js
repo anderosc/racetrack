@@ -9,9 +9,9 @@ export function raceSessions(io, socket) {
     // HANDLE Receptionist Server Logic
 
     socket.on('raceSession:get', (raceSession) => {
-        //CHECK FOR AUTHORIZATION
+        //AUTHORIZATION
         if(!isLoggedIn(socket, 'receptionist')){
-            socket.emit('raceSession:create:failure', {error: 'User Is Not Logged into receptionist.'});
+            socket.emit('raceSession:create:failure', {error: 'User Is Not Logged in.'});
             return;
         }
         const sessionNameToFind = raceSession.sessionName.trim().toLowerCase();
@@ -28,7 +28,7 @@ export function raceSessions(io, socket) {
     socket.on('raceSession:create', (nextRaceSession) => {
         //CHECK FOR AUTHORIZATION
         if(!isLoggedIn(socket, 'receptionist')){
-            socket.emit('raceSession:create:failure', {error: 'User is not logged into receptionist.'});
+            socket.emit('raceSession:create:failure', {error: 'User is not logged in.'});
             return;
         }
         //CHECK FOR DUPLICATE SESSION NAME
@@ -55,7 +55,7 @@ export function raceSessions(io, socket) {
     socket.on('raceSession:delete', (raceSession) => {
         //CHECK FOR AUTHORIZATION
         if(!isLoggedIn(socket, 'receptionist')){
-            socket.emit('raceSession:delete:failure', {error: 'User Is Not Logged into receptionist.'});
+            socket.emit('raceSession:delete:failure', {error: 'User Is Not Logged in.'});
             return;
         }
         const sessionNameToDelete = raceSession.sessionName.trim().toLowerCase();
@@ -68,30 +68,37 @@ export function raceSessions(io, socket) {
         );
 
         if (wasDeleted) {
-            io.to('receptionist').emit('raceSession:delete:success', raceSession);
+            io.to('receptionist').emit('raceSession:delete:success', { sessionName: raceSession.sessionName } );
             io.emit("race:update", raceTrackState);
         } else {
-            //console.log(`No matching session found to delete: ${RaceSession.sessionName}`);
+            socket.emit('raceSession:delete:failure', {error: 'No matching session found to delete.'} );
         }
     });
 
     socket.on('raceSession:driver:add', (raceSessionDriver) => {
-        //TODO ADD CUSTOM CAR...
-        //CHECK FOR AUTHORIZATION
-        if(!isLoggedIn(socket, 'receptionist')){
-            socket.emit('raceSession:driver:add:failure', {error: 'User Is Not Logged into receptionist.'});
-            return;
-        }
-        const sessionName = raceSessionDriver.sessionName.trim().toLowerCase();
-        // Find the session from upComingRaces
-        const session = raceTrackState.upComingRaces.find(session => session.sessionName.trim().toLowerCase() === sessionName);
-        if (!session) {
-            console.log(`Session "${sessionName}" not found.`);
+        // Check authorization
+        if (!isLoggedIn(socket, 'receptionist')) {
+            socket.emit('raceSession:driver:add:failure', { error: 'User Is Not Logged in.' });
             return;
         }
 
+        const sessionName = raceSessionDriver.sessionName.trim().toLowerCase();
+        const requestedCarNumber = raceSessionDriver.driver.carNumber;
+        const driverName = raceSessionDriver.driver.name.trim();
+
+        // Find the session
+        const session = raceTrackState.upComingRaces.find(
+            session => session.sessionName.trim().toLowerCase() === sessionName
+        );
+
+        if (!session) {
+            socket.emit('raceSession:driver:add:failure', { error: 'Session not found.' });
+            return;
+        }
+
+        // Check for duplicate driver name
         const isDuplicateDriver = session.drivers.some(
-            driver => driver.name.trim().toLowerCase() === raceSessionDriver.driver.name.trim().toLowerCase()
+            driver => driver.name.trim().toLowerCase() === driverName.toLowerCase()
         );
 
         if (isDuplicateDriver) {
@@ -99,37 +106,55 @@ export function raceSessions(io, socket) {
             return;
         }
 
-        // Check current car numbers used in this session
+        // Get list of already used car numbers
         const usedCarNumbers = session.drivers.map(driver => driver.carNumber);
-        // Find the first available car number (1 to 8)
-        let availableCarNumber = null;
-        for (let i = 1; i <= 8; i++) {
-            if (!usedCarNumbers.includes(i)) {
-                availableCarNumber = i;
-                break;
+
+        let assignedCarNumber = null;
+
+        if (requestedCarNumber === 0) {
+            // Auto-assign the first available car number
+            for (let i = 1; i <= 8; i++) {
+                if (!usedCarNumbers.includes(i)) {
+                    assignedCarNumber = i;
+                    break;
+                }
             }
-        }
-        // If no car numbers available
-        if (!availableCarNumber) {
-            socket.emit('raceSession:driver:add:failure', {error: 'No available car number.'});
+
+            if (!assignedCarNumber) {
+                socket.emit('raceSession:driver:add:failure', { error: 'No available car numbers.' });
+                return;
+            }
+
+        } else if (requestedCarNumber >= 1 && requestedCarNumber <= 8) {
+            // Check if the requested car number is available
+            if (usedCarNumbers.includes(requestedCarNumber)) {
+                socket.emit('raceSession:driver:add:failure', { error: `Car number ${requestedCarNumber} is already taken.` });
+                return;
+            } else {
+                assignedCarNumber = requestedCarNumber;
+            }
+
+        } else {
+            socket.emit('raceSession:driver:add:failure', { error: 'Invalid car number requested. Must be between 1 and 8.' });
             return;
         }
+
         // Add the driver to the session
         session.drivers.push({
-            name: raceSessionDriver.driver.name.trim(),
-            carNumber: availableCarNumber,
+            name: driverName,
+            carNumber: assignedCarNumber,
             fastestLap: null,
             currentLap: 0
         });
-        const raceDriver = {sessionName: sessionName, driverName: raceSessionDriver.driver.name, carNumber: availableCarNumber};
-        io.to('receptionist').emit('raceSession:driver:add:success', raceDriver);
+
+        io.to('receptionist').emit('raceSession:driver:add:success', { sessionName: sessionName, driverName: driverName, carNumber: assignedCarNumber });
         io.emit("race:update", raceTrackState);
     });
 
     socket.on('raceSession:driver:remove', ({ sessionName, driverName }) => {
         // Check if user is authorized (e.g., receptionist)
         if (!isLoggedIn(socket, 'receptionist')) {
-            socket.emit('raceSession:driver:remove:failure', { error: 'User is not logged in as receptionist.' });
+            socket.emit('raceSession:driver:remove:failure', { error: 'User is not logged in.' });
             return;
         }
 
@@ -161,7 +186,6 @@ export function raceSessions(io, socket) {
 
         // Emit success to relevant clients
         io.to('receptionist').emit('raceSession:driver:remove:success', { sessionName: session.sessionName, driverName: removedDriver.name, carNumber: removedDriver.carNumber });
-
         io.emit("race:update", raceTrackState);
     });
 

@@ -2,6 +2,31 @@ const socket = io();
 
 document.getElementById("login").addEventListener("click", login);
 
+function showError(message) {
+  const container = document.getElementById("error-container");
+
+  const box = document.createElement("div");
+  box.className = "error-box";
+  box.innerHTML = `
+    <button class="close-btn">&times;</button>
+    ${message}
+  `;
+
+  // Add close functionality
+  box.querySelector(".close-btn").onclick = () => {
+    container.removeChild(box);
+  };
+
+  container.appendChild(box);
+
+  // Auto-remove after 5 seconds (matches CSS animation)
+  setTimeout(() => {
+    if (container.contains(box)) {
+      container.removeChild(box);
+    }
+  }, 5000);
+}
+
 function login() {
     const input = document.getElementById("token");
     if (input.value) {
@@ -215,11 +240,16 @@ function createRaceDriversBox(drivers) {
     select.style.padding = '10px';
     select.style.margin = '10px';
 
-    const options = ['auto', 'car1', 'car2', 'car3', 'car4', 'car5', 'car6', 'car7', 'car8'];
+    const options = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     options.forEach(value => {
         const option = document.createElement('option');
         option.value = value;
-        option.textContent = value.charAt(0).toUpperCase() + value.slice(1).replace(/\d/, d => ` ${d}`);
+        if(option.value == 0) {
+            option.textContent = 'Auto';
+        } else {
+            option.textContent =  'Car ' + value;
+        }
+        
         select.appendChild(option);
     });
 
@@ -319,11 +349,12 @@ function addDriver(event) {
     const sessionName = element.getElementsByClassName("race-session-name")[0].innerText.trim();
     if (!sessionName) return;
     const driverName = element.querySelector("#raceDriverName").value.trim();
-    //const car = document.getElementById("cars").value;
+    const carNumber = +element.querySelector("#cars").value;
     if(driverName) {
-        socket.emit('raceSession:driver:add', { sessionName: sessionName, driver: {name: driverName, carNumber: 1} });
+        socket.emit('raceSession:driver:add', { sessionName: sessionName, driver: {name: driverName, carNumber: carNumber} });
     }
     element.querySelector("#raceDriverName").value = "";
+    element.querySelector("#cars").value = 0;
 }
 
 function removeDriver(event) {
@@ -367,7 +398,6 @@ function createRaceDriverBox(raceSessionName, driverName, carNumber) {
 
     const driverItem = document.createElement('div');
     driverItem.className = "drivers-box";
-    driverItem.dataset.raceSessionName = "test";
 
     const nameText = document.createElement('p');
     nameText.className = "driverName";
@@ -467,17 +497,39 @@ socket.on('raceSession:get:success', (raceSession) => {
     }
 });
 
-socket.on('raceSession:delete:success', (raceSession) => {
-    deleteRaceBox(raceSession.sessionName);
+socket.on('raceSession:delete:success', ({ sessionName }) => {
+    deleteRaceBox(sessionName);
 });
 
-socket.on('raceSession:driver:add:success', (raceSession) => {
-    const sessionName = raceSession.sessionName;
-    const driverName = raceSession.driverName;
-    const carNumber = raceSession.carNumber;
+socket.on('raceSession:driver:add:success', ({ sessionName, driverName, carNumber }) => {
     createRaceDriverBox(sessionName, driverName, carNumber);
 });
 
 socket.on('raceSession:driver:remove:success', ({ sessionName, driverName }) => {
     deleteRaceDriverBox(sessionName, driverName);
 });
+
+
+//HANDLE FAILURES
+
+socket.on('raceSession:get:failure', (msg) => {
+    showError(msg.error);
+});
+
+socket.on('raceSession:create:failure', (msg) => {
+    showError(msg.error);
+});
+
+socket.on('raceSession:delete:failure', (msg) => {
+    showError(msg.error);
+});
+
+socket.on('raceSession:driver:add:failure', (msg) => {
+    showError(msg.error);
+});
+
+socket.on('raceSession:driver:remove:failure', (msg) => {
+    showError(msg.error);
+});
+
+
