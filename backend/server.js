@@ -1,5 +1,7 @@
 
 import express from 'express';
+import os from 'os';
+
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'node:url';
@@ -130,7 +132,19 @@ nextRaceLogic(io, socket);
 });
 
 
+function getLocalIP() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const intf of interfaces[name]) {
+            if (intf.family === 'IPv4' && !intf.internal) {
+                return intf.address.toString();
+            }
+        }
+    }
+}
+
 //Server Start
-server.listen(port, () => {
-    console.log('server running at http://localhost:' + port);
+server.listen(port, '0.0.0.0', () => {
+    console.log('server running at http://localhost:' + port)
+    console.log(`Server running at http://${getLocalIP()}:${port}`);
 });
