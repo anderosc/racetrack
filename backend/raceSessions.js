@@ -152,7 +152,6 @@ export function raceSessions(io, socket) {
     });
 
     socket.on('raceSession:driver:remove', ({ sessionName, driverName }) => {
-        // Check if user is authorized (e.g., receptionist)
         if (!isLoggedIn(socket, 'receptionist')) {
             socket.emit('raceSession:driver:remove:failure', { error: 'User is not logged in.' });
             return;
@@ -161,7 +160,6 @@ export function raceSessions(io, socket) {
         const trimmedSessionName = sessionName.trim().toLowerCase();
         const trimmedDriverName = driverName.trim().toLowerCase();
 
-        // Find the session
         const session = raceTrackState.upComingRaces.find(
             session => session.sessionName.trim().toLowerCase() === trimmedSessionName
         );
@@ -171,7 +169,6 @@ export function raceSessions(io, socket) {
             return;
         }
 
-        // Find the driver index
         const driverIndex = session.drivers.findIndex(
             driver => driver.name.trim().toLowerCase() === trimmedDriverName
         );
@@ -181,11 +178,72 @@ export function raceSessions(io, socket) {
             return;
         }
 
-        // Remove the driver from session
         const removedDriver = session.drivers.splice(driverIndex, 1)[0];
 
-        // Emit success to relevant clients
         io.to('receptionist').emit('raceSession:driver:remove:success', { sessionName: session.sessionName, driverName: removedDriver.name, carNumber: removedDriver.carNumber });
+        io.emit("race:update", raceTrackState);
+    });
+
+    socket.on('raceSession:driver:update', (updateData) => {
+        if (!isLoggedIn(socket, 'receptionist')) {
+            socket.emit('raceSession:driver:update:failure', { error: 'User is not logged in.' });
+            return;
+        }
+        const sessionName = updateData.sessionName.trim().toLowerCase();
+        const driverNameOld = updateData.driverNameOld.trim();
+        const driverNameNew = updateData.driverNameNew.trim();
+        const requestedCarNumber = parseInt(updateData.carNumber);
+        const session = raceTrackState.upComingRaces.find(
+            session => session.sessionName.trim().toLowerCase() === sessionName
+        );
+        if (!session) {
+            socket.emit('raceSession:driver:update:failure', { error: 'Session not found.' });
+            return;
+        }
+        const driver = session.drivers.find(
+            d => d.name.trim().toLowerCase() === driverNameOld.toLowerCase()
+        );
+        if (!driver) {
+            socket.emit('raceSession:driver:update:failure', { error: 'Original driver not found in session.' });
+            return;
+        }
+        if (
+            driverNameNew.toLowerCase() !== driverNameOld.toLowerCase() &&
+            session.drivers.some(d => d.name.trim().toLowerCase() === driverNameNew.toLowerCase())
+        ) {
+            socket.emit('raceSession:driver:update:failure', { error: 'Another driver with the new name already exists.' });
+            return;
+        }
+        const usedCarNumbers = session.drivers
+            .filter(d => d.name.trim().toLowerCase() !== driverNameOld.toLowerCase())
+            .map(d => d.carNumber);
+        let assignedCarNumber = null;
+        if (requestedCarNumber === 0) {
+            for (let i = 1; i <= 8; i++) {
+                if (!usedCarNumbers.includes(i)) {
+                    assignedCarNumber = i;
+                    break;
+                }
+            }
+            if (!assignedCarNumber) {
+                socket.emit('raceSession:driver:update:failure', { error: 'No available car numbers.' });
+                return;
+            }
+        } else if (requestedCarNumber >= 1 && requestedCarNumber <= 8) {
+            if (usedCarNumbers.includes(requestedCarNumber)) {
+                socket.emit('raceSession:driver:update:failure', { error: `Car number ${requestedCarNumber} is already taken.` });
+                return;
+            } else {
+                assignedCarNumber = requestedCarNumber;
+            }
+        } else {
+            socket.emit('raceSession:driver:update:failure', { error: 'Invalid car number requested. Must be between 1 and 8, or 0 for auto.' });
+            return;
+        }
+        driver.name = driverNameNew;
+        driver.carNumber = assignedCarNumber;
+
+        io.to('receptionist').emit('raceSession:driver:update:success', { sessionName, driverNameOld, driverNameNew, carNumber: assignedCarNumber });
         io.emit("race:update", raceTrackState);
     });
 

@@ -324,6 +324,7 @@ function createRaceDriversBox(drivers) {
         const editImg = document.createElement('img');
         editImg.className = 'icon-small';
         editImg.src = '/img/editIcon.png';
+        editBox.addEventListener("click", editDriver);
         editBox.appendChild(editImg);
         driverItem.appendChild(editBox);
 
@@ -366,11 +367,102 @@ function removeDriver(event) {
     if (!sessionName) return;
     const driverName = element.getElementsByClassName("driverName")[0].innerText.trim();
     if (!driverName) return;
-    if(sessionName && driverName) {
+    const carNumberStr = element.getElementsByClassName("driverCarNumber")[0].innerText.trim();
+    if (!carNumberStr) return;
+    const carNumber = carNumberStr[carNumberStr.length - 1];
+    if(sessionName && driverName && carNumber) {
         socket.emit('raceSession:driver:remove', { sessionName: sessionName, driverName: driverName });
     }
 }
 
+function editDriver(event) {
+    const driverBox = event.currentTarget.closest(".drivers-box");
+    if (!driverBox) return;
+    const element1 = event.currentTarget.closest(".race-session");
+    if (!element1) return;
+    const sessionName = element1.getElementsByClassName("race-session-name")[0].innerText.trim();
+    if (!sessionName) return;
+    const existingForm = driverBox.querySelector(".edit-form");
+    const saveForm = driverBox.querySelector(".save");
+    const driverNameEl = driverBox.querySelector(".driverName");
+    const driverCarEl = driverBox.querySelector(".driverCarNumber");
+
+    if (existingForm) {
+        existingForm.remove();
+        saveForm.remove();
+        driverNameEl.style.display = "";
+        driverCarEl.style.display = "";
+        return;
+    }
+
+    const driverNameOld = driverNameEl?.innerText.trim();
+    const carNumberStr = driverCarEl?.innerText.trim();
+
+    const carMatch = carNumberStr?.match(/Car\s*(\d+)/i);
+    const carNumber = carMatch ? carMatch[1] : "0";
+
+    driverNameEl.style.display = "none";
+    driverCarEl.style.display = "none";
+
+    const editForm = document.createElement("div");
+    editForm.className = "edit-form";
+    editForm.style.display = "flex";
+    editForm.style.alignItems = "center";
+    editForm.style.gap = "10px";
+    editForm.style.position = "relative";
+    editForm.style.zIndex = "1";
+
+    const nameInput = document.createElement("input");
+    //nameInput.id = "";
+    nameInput.type = "text";
+    nameInput.value = driverNameOld || "";
+    nameInput.style.padding = "5px";
+
+    const carSelect = document.createElement("select");
+    carSelect.style.padding = "5px";
+
+    for (let i = 1; i <= 8; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.text = `Car ${i}`;
+        if (i.toString() === carNumber) {
+            option.selected = true;
+        }
+        carSelect.appendChild(option);
+    }
+
+    const saveBox = document.createElement('div');
+    saveBox.className = 'save inner-box-small';
+    saveBox.style.height = '55px';
+    saveBox.style.width = '60px';
+    saveBox.style.right = '125px';
+
+    const saveImg = document.createElement('img');
+    saveImg.className = 'icon-small';
+    saveImg.src = '/img/saveIcon.png';
+    saveBox.appendChild(saveImg);
+    saveBox.addEventListener("click", () => {
+        const driverNameNew = nameInput.value.trim();
+        const carNumberStr = +carSelect.value;
+        editForm.remove();
+        saveBox.remove();
+        driverNameEl.style.display = "";
+        driverCarEl.style.display = "";
+        updateDriver(sessionName, driverNameOld, driverNameNew, carNumberStr);
+    });
+
+    editForm.appendChild(nameInput);
+    editForm.appendChild(carSelect);
+    
+    driverBox.appendChild(saveBox);
+    driverBox.appendChild(editForm);
+}
+
+function updateDriver(sessionName, driverNameOld, driverNameNew, carNumber) {
+    if(sessionName && driverNameOld && driverNameNew && carNumber) {
+        socket.emit('raceSession:driver:update', { sessionName: sessionName, driverNameOld: driverNameOld, driverNameNew : driverNameNew, carNumber: carNumber });
+    }
+}
 
 function createRaceDriverBox(raceSessionName, driverName, carNumber) {
     const raceSessionElements = document.querySelectorAll(".race-session");
@@ -439,6 +531,7 @@ function createRaceDriverBox(raceSessionName, driverName, carNumber) {
     editBox.style.height = '55px';
     editBox.style.width = '60px';
     editBox.style.right = '60px';
+    editBox.addEventListener("click", editDriver);
 
     const editImg = document.createElement('img');
     editImg.className = 'icon-small';
@@ -446,9 +539,51 @@ function createRaceDriverBox(raceSessionName, driverName, carNumber) {
     editBox.appendChild(editImg);
     driverItem.appendChild(editBox);
 
-    // Finally append it
     driversContainer.appendChild(driverItem);
 }
+
+function updateRaceDriverBox(sessionName, driverNameOld, driverNameNew, carNumber) {
+    const allSessions = document.querySelectorAll('.race-session');
+
+    for (const session of allSessions) {
+        const sessionNameEl = session.querySelector('.race-session-name');
+        if (!sessionNameEl) continue;
+
+        if (sessionNameEl.innerText.trim().toLowerCase() === sessionName.trim().toLowerCase()) {
+            const drivers = session.querySelectorAll('.drivers-box');
+
+            for (const driverBox of drivers) {
+                const nameEl = driverBox.querySelector('.driverName');
+                if (!nameEl) continue;
+
+                if (nameEl.innerText.trim().toLowerCase() === driverNameOld.trim().toLowerCase()) {
+                    nameEl.innerText = driverNameNew;
+
+                    const carEl = driverBox.querySelector('.driverCarNumber');
+                    if (carEl) {
+                        carEl.innerText = ` - Car ${carNumber}`;
+                    }
+
+                    const numberBox = driverBox.querySelector('.driver-number p');
+                    if (numberBox) {
+                        numberBox.innerText = carNumber;
+                    }
+
+                    const editForm = driverBox.querySelector('.edit-form');
+                    const saveButton = driverBox.querySelector('.save');
+                    if (editForm) editForm.remove();
+                    if (saveButton) saveButton.remove();
+
+                    nameEl.style.display = '';
+                    if (carEl) carEl.style.display = '';
+
+                    return;
+                }
+            }
+        }
+    }
+}
+
 
 socket.on('login', (msg) => {
     const input = document.getElementById("token");
@@ -509,27 +644,14 @@ socket.on('raceSession:driver:remove:success', ({ sessionName, driverName }) => 
     deleteRaceDriverBox(sessionName, driverName);
 });
 
+socket.on('raceSession:driver:update:success', ({ sessionName, driverNameOld, driverNameNew, carNumber }) => {
+    updateRaceDriverBox(sessionName, driverNameOld, driverNameNew, carNumber);
+});
 
 //HANDLE FAILURES
 
-socket.on('raceSession:get:failure', (msg) => {
-    showError(msg.error);
+socket.onAny((event, msg) => {
+    if (event.endsWith(':failure') && msg?.error) {
+        showError(msg.error);
+    }
 });
-
-socket.on('raceSession:create:failure', (msg) => {
-    showError(msg.error);
-});
-
-socket.on('raceSession:delete:failure', (msg) => {
-    showError(msg.error);
-});
-
-socket.on('raceSession:driver:add:failure', (msg) => {
-    showError(msg.error);
-});
-
-socket.on('raceSession:driver:remove:failure', (msg) => {
-    showError(msg.error);
-});
-
-
