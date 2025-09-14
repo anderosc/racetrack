@@ -1,0 +1,32 @@
+{
+  "upComingRaces": [],
+  "currentRace": {
+    "sessionName": "asdddsa",
+    "startTime": null,
+    "endTime": null,
+    "drivers": [
+      {
+        "name": "ddd",
+        "carNumber": 1,
+        "fastestLap": null,
+        "currentLap": 0
+      },
+      {
+        "name": "vvv",
+        "carNumber": 2,
+        "fastestLap": null,
+        "currentLap": 0
+      },
+      {
+        "name": "sss",
+        "carNumber": 3,
+        "fastestLap": null,
+        "currentLap": 0
+      }
+    ],
+    "durationSeconds": 391,
+    "raceMode": "Safe",
+    "isStarted": true,
+    "isEnded": false
+  }
+}
