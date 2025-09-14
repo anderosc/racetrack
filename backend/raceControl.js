@@ -58,6 +58,10 @@ export function raceControl(io, socket){
         raceTrackState.currentRace.durationSeconds = 0;
         raceTrackState.currentRace.raceMode = "Finish";
         io.emit("race:finish", raceTrackState)
+
+        // live update to all clients every second (to display correct timer on leaderboard)
+      } else {
+        io.emit("state:update", raceTrackState)
       }
       saveState();
       }, 1000);

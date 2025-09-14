@@ -114,11 +114,15 @@ io.on('connection', (socket) => {
     }
     });
 
+    socket.on('race:requestState', () => {
+        socket.emit('state:update', raceTrackState);
+    })
+
     //RACE SESSIONS LOGIC
     raceSessions(io, socket);
 
     // LAP COMPLETION EVENT
-    handleLapTracking(io, socket);
+    handleLapTracking(io, socket, raceTrackState);
 
 raceControl(io, socket)
 nextRaceLogic(io, socket);
