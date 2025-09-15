@@ -1,38 +1,57 @@
 import { raceTrackState, saveState  } from './state.js';
 
 
-let timerInterval = null;
-//Check in which envrionment sevrer started -> production or development. Assign race duration.
-const TIMER_DURATION = process.env.NODE_ENV === 'development' ? 60 : 600;
+  let timerInterval = null;
+  //Check in which envrionment sevrer started -> production or development. Assign race duration.
+  const TIMER_DURATION = process.env.NODE_ENV === 'development' ? 60 : 600;
 
-export function raceControl(io, socket){
+  export function raceControl(io, socket){
 
-    //"Immediately Invoked Function Expression"
-    // Check before if server was closed before and do we have current race saved data. If yes, continue it.
-  (function startRaceIfOngoing() {
+        function isLoggedIn(socket, room) {
+          return socket.rooms.has(room);
+      }
 
-    if (!timerInterval && raceTrackState.currentRace.isStarted && !raceTrackState.currentRace.isEnded) {
-        timerInterval = setInterval(() => {
-            raceTrackState.currentRace.durationSeconds -= 1;
-            // If timer reaches 0
-            if (raceTrackState.currentRace.durationSeconds <= 0) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                raceTrackState.currentRace.durationSeconds = 0;
-                raceTrackState.currentRace.raceMode = "Finish";
-            }
-            saveState();
-        }, 1000);
-    }
-})();
+      //"Immediately Invoked Function Expression"
+      // Check before if server was closed before and do we have current race saved data. If yes, continue it.
+    (function startRaceIfOngoing() {
+
+      if (!timerInterval && raceTrackState.currentRace.isStarted && !raceTrackState.currentRace.isEnded) {
+          timerInterval = setInterval(() => {
+              raceTrackState.currentRace.durationSeconds -= 1;
+              // If timer reaches 0
+              if (raceTrackState.currentRace.durationSeconds <= 0) {
+                  clearInterval(timerInterval);
+                  timerInterval = null;
+                  raceTrackState.currentRace.durationSeconds = 0;
+                  raceTrackState.currentRace.raceMode = "Finish";
+              }
+              saveState();
+          }, 1000);
+      }
+  })();
   
 
   socket.on("race:init", () =>{
+      if(!isLoggedIn(socket, 'raceControl')){
+        socket.emit('racecontrol:error', 
+        {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
+        return;
+      }
+    try{
+    
     socket.emit("race:update", raceTrackState)
+    } catch (err){
+      console.error("Page init error:", err);
+      socket.emit("racecontrol:error", { message: "Init error", error: err.toString() });
+    }
   });
 
   socket.on('race:start', () => {
-  // Timer loop - updates every second. 60 second development, 600 for production
+      if(!isLoggedIn(socket, 'raceControl')){
+        socket.emit('racecontrol:error', 
+        {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
+        return;
+      }
 
     assignNextRace()
     saveState();
@@ -43,55 +62,81 @@ export function raceControl(io, socket){
     raceTrackState.currentRace.durationSeconds = TIMER_DURATION;
     io.emit("race:update", raceTrackState)
 
+    // Timer loop - updates every second. 60 second development, 600 for production
     timerInterval = setInterval(() => {
-
-      if (!raceTrackState.currentRace?.durationSeconds){
-        return;
+        try{
+          if (!raceTrackState.currentRace?.durationSeconds){
+            return;
+          }
+          //Countdown seconds
+          raceTrackState.currentRace.durationSeconds = raceTrackState.currentRace.durationSeconds - 1;
+          //If timer reaches 0 then stop timer
+          if (raceTrackState.currentRace.durationSeconds <= 0) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            raceTrackState.currentRace.durationSeconds = 0;
+            raceTrackState.currentRace.raceMode = "Finish";
+            io.emit("race:finish", raceTrackState)
+          }
+          saveState();
+      } catch(err){
+        console.log( "Timer error: ", err)
+        socket.emit("racecontrol:error", { message: "Timer error", error: err.toString() });
       }
-
-      //Countdown seconds
-    raceTrackState.currentRace.durationSeconds = raceTrackState.currentRace.durationSeconds - 1;
-      //If timer reaches 0 then stop timer
-      if (raceTrackState.currentRace.durationSeconds <= 0) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        raceTrackState.currentRace.durationSeconds = 0;
-        raceTrackState.currentRace.raceMode = "Finish";
-        io.emit("race:finish", raceTrackState)
-
-        // live update to all clients every second (to display correct timer on leaderboard)
-      } else {
-        io.emit("state:update", raceTrackState)
-      }
-      saveState();
-      }, 1000);
-      io.emit("state:update",  raceTrackState );
+    }, 1000);
+    io.emit("state:update",  raceTrackState );
   });
 
   //Change modes, update them
   socket.on("race:safe", () => {
+    if(!isLoggedIn(socket, 'raceControl')){
+      socket.emit('racecontrol:error', 
+      {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
+      return;
+    }
     raceTrackState.currentRace.raceMode = "Safe";
     io.emit("race:update", raceTrackState);
   })
+
   socket.on("race:hazard", () => {
+    if(!isLoggedIn(socket, 'raceControl')){
+      socket.emit('racecontrol:error', 
+      {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
+      return;
+    }
     raceTrackState.currentRace.raceMode = "Hazard";
     io.emit("race:update", raceTrackState);
   })
+
   socket.on("race:danger", () => {
+    if(!isLoggedIn(socket, 'raceControl')){
+      socket.emit('racecontrol:error', 
+      {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
+      return;
+    }
     raceTrackState.currentRace.raceMode = "Danger";
     io.emit("race:update", raceTrackState);
   })
 
   // End session for all.
   socket.on("race:endSession", () => {
+    if(!isLoggedIn(socket, 'raceControl')){
+      socket.emit('racecontrol:error', 
+      {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
+      return;
+    }
     raceTrackState.currentRace.raceMode = "Danger"
-    // raceTrackState.raceHistory.push(raceTrackState.currentRace);
     raceTrackState.currentRace.isEnded = true;
     io.emit("race:update",  raceTrackState);
   })
 
   //Finish session
   socket.on("race:finish", () =>{
+    if(!isLoggedIn(socket, 'raceControl')){
+      socket.emit('racecontrol:error', 
+      {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
+      return;
+    }
   if (timerInterval) {
     clearInterval(timerInterval);
   }
@@ -102,16 +147,49 @@ export function raceControl(io, socket){
   io.emit("race:update",  raceTrackState);
   });
 
-}
+
 
 
  function assignNextRace(){
-  // console.log("what is happening")
-  if (!raceTrackState.upComingRaces?.[0]?.sessionName){
+  //Before assigning next race and making changes in object, check if the data is correct
+  try{
+    //Is next session created?
+    if (!raceTrackState.upComingRaces?.[0]?.sessionName){
       // console.log("sessionname: " , raceTrackState.upComingRaces[0].sessionName)
-    return;
-  }
-      //Assign next race values to global currentRace variable.
+       socket.emit("racecontrol:error", { 
+        message: "No upcoming races", 
+        error: "" 
+      });
+      return;
+    }
+    //Are there any drivers assigned?
+    if(raceTrackState.upComingRaces[0].drivers.length === 0){
+      socket.emit("racecontrol:error", {
+        message: "No upcoming races",
+        error: ""
+      })
+      return;
+    }
+    //Do drivers have name and car
+    for(const driver of raceTrackState.upComingRaces[0].drivers){
+      if (!driver.name || driver.name.trim() === "") {
+        socket.emit("racecontrol:error", {
+        message: "Missing driver name in drivers list.",
+        error: JSON.stringify(driver)
+        })
+      return;
+      }
+      if (driver.carNumber == null) {
+        socket.emit("racecontrol:error", {
+        message: "Missing assigned car in drivers list.",
+        error: JSON.stringify(driver)
+        })
+      return;
+      }
+    }
+    
+
+      //If prev checks passed, assign next race values to global currentRace obj.
     raceTrackState.currentRace = {
       sessionName: raceTrackState.upComingRaces[0].sessionName,
       startTime: null,
@@ -122,6 +200,13 @@ export function raceControl(io, socket){
     }
   //Remove first element fromt upComingRace
   raceTrackState.upComingRaces.shift();
+    
+    } catch(err){
+      console.error("Error in next race assignment:", err);
+      socket.emit("racecontrol:error", { message: "Error in next race assignment:", error: err.toString() });
+      return;
+    }
+  }
 }
 
 

@@ -126,22 +126,22 @@ io.on('connection', (socket) => {
     // LAP COMPLETION EVENT
     handleLapTracking(io, socket, raceTrackState);
 
-raceControl(io, socket)
-nextRaceLogic(io, socket);
+    raceControl(io, socket)
+    nextRaceLogic(io, socket);
 
 });
 
 
-function getLocalIP() {
-    const interfaces = os.networkInterfaces();
-    for (const name of Object.keys(interfaces)) {
-        for (const intf of interfaces[name]) {
-            if (intf.family === 'IPv4' && !intf.internal) {
-                return intf.address.toString();
+    function getLocalIP() {
+        const interfaces = os.networkInterfaces();
+        for (const name of Object.keys(interfaces)) {
+            for (const intf of interfaces[name]) {
+                if (intf.family === 'IPv4' && !intf.internal) {
+                    return intf.address.toString();
+                }
             }
         }
     }
-}
 
 //Server Start
 server.listen(port, '0.0.0.0', () => {
