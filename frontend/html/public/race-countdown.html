@@ -32,7 +32,6 @@
 
     function renderRaceState(state){
         console.log(state)
-        console.log("its working")
         if (state.currentRace?.isStarted && state.currentRace.durationSeconds >= 0 && state.currentRace?.raceMode !== "Finish") {
             formatTime(state.currentRace.durationSeconds)
             if(!timerInterval){

@@ -150,7 +150,6 @@ function renderRaceState(state) {
     session.innerHTML = `Current session :` + state.currentRace.sessionName
     return
   } else if (state.currentRace?.raceMode === "Danger" && state.currentRace?.isEnded == true  ) {
-    console.log("here 15231")
 
       if(state.upComingRaces.length == 0 || state.upComingRaces == null){
         startRaceBtn.style.display = "none";
@@ -162,7 +161,6 @@ function renderRaceState(state) {
         errTag.style.display = "block"
           return
       } else { 
-    console.log("here 14")
 
         startRaceBtn.style.display = "block";
         session.style.display = "none"
@@ -173,8 +171,6 @@ function renderRaceState(state) {
         return
     }
   } else{
-    console.log("here 12")
-
     startRaceBtn.style.display = "block"
     raceControls.style.display = "none";
     endSessionBtn.style.display = "none";
@@ -217,10 +213,7 @@ socket.on("login", (res) => {
   }
 });
 
-socket.on("race:error", (errorMessage) => {
-  errTag.innerHTML = errorMessage;
-  errTag.style.display = "block"
-})
+
 
 // Start race
   startRaceBtn.addEventListener("click", () => {
@@ -261,6 +254,15 @@ socket.on("race:error", (errorMessage) => {
         raceControls.style.display = "none"
         timerInterval = null
     });
+
+  socket.on("racecontrol:error", (errorMessage) =>{
+    startRaceBtn.style.display = "none";
+    raceControls.style.display = "none";
+    endSessionBtn.style.display = "none";
+    session.style.display = "none"
+    errTag.innerHTML = errorMessage.message + ":" + errorMessage.error
+    errTag.style.display = "block"
+  })
     
 
     //remaining time from socket to seconds
