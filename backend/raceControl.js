@@ -1,34 +1,34 @@
 import { raceTrackState, saveState  } from './state.js';
 
 
-let timerInterval = null;
-//Check in which envrionment sevrer started -> production or development. Assign race duration.
-const TIMER_DURATION = process.env.NODE_ENV === 'development' ? 60 : 600;
+  let timerInterval = null;
+  //Check in which envrionment sevrer started -> production or development. Assign race duration.
+  const TIMER_DURATION = process.env.NODE_ENV === 'development' ? 60 : 600;
 
-export function raceControl(io, socket){
+  export function raceControl(io, socket){
 
-      function isLoggedIn(socket, room) {
-        return socket.rooms.has(room);
-    }
+        function isLoggedIn(socket, room) {
+          return socket.rooms.has(room);
+      }
 
-    //"Immediately Invoked Function Expression"
-    // Check before if server was closed before and do we have current race saved data. If yes, continue it.
-  (function startRaceIfOngoing() {
+      //"Immediately Invoked Function Expression"
+      // Check before if server was closed before and do we have current race saved data. If yes, continue it.
+    (function startRaceIfOngoing() {
 
-    if (!timerInterval && raceTrackState.currentRace.isStarted && !raceTrackState.currentRace.isEnded) {
-        timerInterval = setInterval(() => {
-            raceTrackState.currentRace.durationSeconds -= 1;
-            // If timer reaches 0
-            if (raceTrackState.currentRace.durationSeconds <= 0) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                raceTrackState.currentRace.durationSeconds = 0;
-                raceTrackState.currentRace.raceMode = "Finish";
-            }
-            saveState();
-        }, 1000);
-    }
-})();
+      if (!timerInterval && raceTrackState.currentRace.isStarted && !raceTrackState.currentRace.isEnded) {
+          timerInterval = setInterval(() => {
+              raceTrackState.currentRace.durationSeconds -= 1;
+              // If timer reaches 0
+              if (raceTrackState.currentRace.durationSeconds <= 0) {
+                  clearInterval(timerInterval);
+                  timerInterval = null;
+                  raceTrackState.currentRace.durationSeconds = 0;
+                  raceTrackState.currentRace.raceMode = "Finish";
+              }
+              saveState();
+          }, 1000);
+      }
+  })();
   
 
   socket.on("race:init", () =>{
@@ -52,7 +52,6 @@ export function raceControl(io, socket){
         {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
         return;
       }
-  // Timer loop - updates every second. 60 second development, 600 for production
 
     assignNextRace()
     saveState();
@@ -63,6 +62,7 @@ export function raceControl(io, socket){
     raceTrackState.currentRace.durationSeconds = TIMER_DURATION;
     io.emit("race:update", raceTrackState)
 
+    // Timer loop - updates every second. 60 second development, 600 for production
     timerInterval = setInterval(() => {
         try{
           if (!raceTrackState.currentRace?.durationSeconds){
@@ -77,9 +77,6 @@ export function raceControl(io, socket){
             raceTrackState.currentRace.durationSeconds = 0;
             raceTrackState.currentRace.raceMode = "Finish";
             io.emit("race:finish", raceTrackState)
-            // live update to all clients every second (to display correct timer on leaderboard)
-          } else {
-            io.emit("state:update", raceTrackState)
           }
           saveState();
       } catch(err){
@@ -100,6 +97,7 @@ export function raceControl(io, socket){
     raceTrackState.currentRace.raceMode = "Safe";
     io.emit("race:update", raceTrackState);
   })
+
   socket.on("race:hazard", () => {
     if(!isLoggedIn(socket, 'raceControl')){
       socket.emit('racecontrol:error', 
@@ -109,6 +107,7 @@ export function raceControl(io, socket){
     raceTrackState.currentRace.raceMode = "Hazard";
     io.emit("race:update", raceTrackState);
   })
+
   socket.on("race:danger", () => {
     if(!isLoggedIn(socket, 'raceControl')){
       socket.emit('racecontrol:error', 
@@ -127,7 +126,6 @@ export function raceControl(io, socket){
       return;
     }
     raceTrackState.currentRace.raceMode = "Danger"
-    // raceTrackState.raceHistory.push(raceTrackState.currentRace);
     raceTrackState.currentRace.isEnded = true;
     io.emit("race:update",  raceTrackState);
   })
