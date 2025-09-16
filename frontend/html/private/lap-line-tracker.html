@@ -23,8 +23,22 @@
             <div class="navBarBox"></div>
             <div class="navBarBox"></div>
         </div>
-    <p>Tap a car's button when it crosses the lap line.</p>
-    <div id="buttonsContainer"></div>
+        <div id="loginScreen" class="loginbox centerDiv">
+            <label for="token"><p>Enter Lap-line Tracker Key</p></label>
+            <input type="password" placeholder="Enter Lap-line Tracker Key" id="token"></input>
+            <button id="login" class="loginbtn" type="submit"><p>Login</p></button>
+            <div class="loginerror"><p>Login Failed, please try again.</p></div>
+        </div>
+        <div id="lapLineTracker" style="display:none;">
+            <div class="content-box">
+                <p>Race Control</p>
+                <div id="logout" class="logout">
+                    <p>Logout</p>
+                </div>
+            </div>
+            <p>Tap a car's button when it crosses the lap line.</p>
+            <div id="buttonsContainer"></div>
+        </div>
     </div>
 </body>
 </html>

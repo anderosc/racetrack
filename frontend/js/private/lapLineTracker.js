@@ -1,6 +1,40 @@
 const socket = io();
 
 const container = document.getElementById("buttonsContainer");
+const lapLineTracker = document.getElementById("lapLineTracker");
+
+document.getElementById("login").addEventListener("click", login);
+
+function login() {
+    const input = document.getElementById("token");
+    if (input.value) {
+        socket.emit('login', { persona: 'lapLineTracker', token: input.value });
+    }
+};
+
+function logout() {
+    document.cookie = "lapLineTracker_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    location.reload();
+}
+
+socket.on('login', (msg) => {
+    const input = document.getElementById("token");
+    const persona = msg.persona;
+    const status = msg.status;
+    if(persona == "lapLineTracker") {
+        if(status) {
+            if(msg.cookie != true) {
+                document.cookie = "lapLineTracker_token=" +  input.value + "; path=/";
+            }
+            document.getElementsByClassName("loginbox")[0].remove();
+            lapLineTracker.style.display = "block";
+            document.getElementById("logout").addEventListener("click", logout);
+        }else {
+            document.getElementsByClassName("loginerror")[0].style.display = 'inline-block';
+            input.value = "";
+        }
+    }
+});
 
 let currentRaceName = null;
 
@@ -60,5 +94,5 @@ socket.on('race:update', (state) => {
 });
 
 socket.on('connect', () => {
-    socket.emit('race:requestState')
+    socket.emit('race:requestState');
 })

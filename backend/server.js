@@ -69,13 +69,13 @@ app.get('/race-flags', (req, res) => {
 
 //Server Logic
 io.on('connection', (socket) => {
-
     //HANDLE LOGIN FROM COOKIE
     const rawCookie = socket.handshake.headers.cookie;
     if (rawCookie) {
         const parsedCookies = cookie.parse(rawCookie);
         const receptionistToken = parsedCookies.receptionist_token;
         const raceControlToken = parsedCookies.raceControl_token;
+        const lapLineTrackerToken = parsedCookies.lapLineTracker_token;
         if (receptionistToken === process.env.RECEPTIONIST_KEY) {
             socket.emit('login', { persona: 'receptionist', status: true, cookie: true });
             socket.join('receptionist');
@@ -84,6 +84,10 @@ io.on('connection', (socket) => {
         if (raceControlToken === process.env.SAFETY_KEY) {
             socket.emit('login', { persona: 'raceControl', status: true, cookie: true });
             socket.join('raceControl');
+        }
+        if (lapLineTrackerToken === process.env.LAPLINETRACKER_KEY) {
+            socket.emit('login', { persona: 'lapLineTracker', status: true, cookie: true });
+            socket.join('lapLineTracker');
         }
     }
 
@@ -108,12 +112,22 @@ io.on('connection', (socket) => {
             if(token === process.env.SAFETY_KEY) {
                 socket.emit('login', { persona: persona, status: true });
                 socket.join('raceControl');
-            } else {
-            setTimeout(() => { 
-                socket.emit('login', { persona: persona, status: false });
-            }, 500);
+            }else {
+                setTimeout(() => { 
+                    socket.emit('login', { persona: persona, status: false });
+                }, 500);
+            }
         }
-    }
+        if(persona === "lapLineTracker") {
+            if(token === process.env.LAPLINETRACKER_KEY) {
+                socket.emit('login', { persona: persona, status: true });
+                socket.join('lapLineTracker');
+            } else {
+                setTimeout(() => { 
+                    socket.emit('login', { persona: persona, status: false });
+                }, 500);
+            }
+        }
     });
 
     socket.on('race:requestState', () => {
@@ -130,7 +144,6 @@ io.on('connection', (socket) => {
     nextRaceLogic(io, socket);
 
 });
-
 
     function getLocalIP() {
         const interfaces = os.networkInterfaces();
