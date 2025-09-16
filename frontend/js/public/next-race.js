@@ -31,7 +31,7 @@ function updateNextRace(state) {
     // }
 
     err.style.display = "none";
-    nextSession.innerHTML = "Next Session: " + race.sessionName;
+    nextSession.innerHTML = "<p>Next Session: " + race.sessionName + "</p>";
 
     const tableBody = document.getElementById("tableBody");
 
@@ -41,7 +41,7 @@ function updateNextRace(state) {
       return;
     }
     const tableRows = race.drivers
-        .map(driver => `<tr><td>${driver.name}</td><td>${driver.carNumber}</td></tr>`).join("");
+        .map(driver => `<tr><td><p>${driver.name}</p></td><td><p>${driver.carNumber}</p></td></tr>`).join("");
 
     tableBody.innerHTML = tableRows;
   }

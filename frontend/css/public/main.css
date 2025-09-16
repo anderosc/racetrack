@@ -374,13 +374,16 @@ h1 {
 #table th, 
 #table td {
   border: 1px solid #fff;
-  padding: 10px 15px;
+  /* padding: 10px 15px; */
   text-align: center;
 }
 
 #table th {
   background-color: #474747;
   font-weight: bold;
+}
+#table p {
+    font-size: 18px;
 }
 
 #nextSession {
