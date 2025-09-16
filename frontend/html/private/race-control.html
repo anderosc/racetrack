@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="/css/public/main.css">
+  <link rel="stylesheet" type="text/css" href="/css/public/mobile.css">
 </head>
 <body>
   <div id="navbar" class="left">
@@ -37,23 +38,23 @@
       </div>
     </div>
 
-      <div id="current-session">
-        <h2 id="session">Current Session </h2>
-        <div id="raceTimer">Timer :<div id="minutes"> 0 </div> <div id="minutes"> 0 </div></div>
+      <div id="current-session" style="text-align: center;">
+        <p id="session">Current Session</p>
+        <div id="raceTimer"><p>Timer :</p><div id="minutes"><p style="color: black;"> 0 </p></div> <div id="minutes"><p style="color: black;"> 0 </p></div></div>
       </div>
 
-      <div id="controls">
+      <div id="controls" style="text-align: center;">
         <div> 
-          <button id="startRaceBtn">Start Race</button>
+          <button id="startRaceBtn"><p style="color: black;">Start Race</p></button>
         </div>
         <div id="raceControls">
-          <button id="safe" >Safe</button>
-          <button id="hazard" >Hazard</button>
-          <button id="danger" >Danger</button>
-          <button id="finish"  >Finish</button>
+          <button id="safe" ><p style="color: black;">Safe</p></button>
+          <button id="hazard"><p style="color: black;">Hazard</p></button>
+          <button id="danger"><p style="color: black;">Danger</p></button>
+          <button id="finish"><p style="color: black;">Finish</p></button>
         </div>
         <div>
-          <button id="endSessionBtn">End Session</button>
+          <button id="endSessionBtn"><p style="color: black;">End Session</p></button>
         </div>
       </div>
 

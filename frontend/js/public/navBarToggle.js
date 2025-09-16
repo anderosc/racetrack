@@ -10,9 +10,19 @@ function toggleNavBar() {
         navbar.style.display = 'none';
         content.style.width = 'calc(100% - 10px)';
         showNavBarBtn.style.visibility = 'visible';
+        if (isMobileOrTablet()) {
+            showNavBarBtn.style.position = 'static';
+        }
     }else {
         navbar.style.display = '';
         content.style.width = '';
         showNavBarBtn.style.visibility = 'hidden';
+        //if (!isMobileOrTablet()) {
+        showNavBarBtn.style.position = 'absolute';
+        //}
     }
+}
+
+function isMobileOrTablet() {
+    return window.innerWidth <= 1024; // Customize the threshold if needed
 }

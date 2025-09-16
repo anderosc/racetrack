@@ -49,7 +49,7 @@ function renderRaceState(state) {
             timerInterval = setInterval(() => {
                 if (state.currentRace.durationSeconds > 0) {
                     state.currentRace.durationSeconds--;
-                    raceTimer.innerHTML = `Timer : ${formatTime(state.currentRace.durationSeconds)}`;
+                    raceTimer.innerHTML = `<p>Timer : </p>${formatTime(state.currentRace.durationSeconds)}`;
                 } else {
                     clearInterval(timerInterval);
                     timerInterval = null;
@@ -162,7 +162,7 @@ socket.on("login", (res) => {
   endSessionBtn.addEventListener("click", (state) => {
     socket.emit("race:endSession", state);
     clearInterval(timerInterval);
-    raceTimer.innerHTML = `Timer : <div id="minutes"> ` + 0 +` </div>`  + ':' + `<div id="minutes"> ` + 0 +` </div>`
+    raceTimer.innerHTML = `<p>Timer : </p><div id="minutes"><p style="color: black;"> ` + 0 +` </p></div>`  + ':' + `<div id="minutes"><p style="color: black;"> ` + 0 +` </p></div>`
     socket.emit("race:init")
 
     // renderDrivers(state);
@@ -198,5 +198,5 @@ socket.on("login", (res) => {
       s = '0' + s;
     }
     //return divs with minutes and seconds 
-      return ` <div id="minutes"> ` +m +` </div>`  + ':' + `<div id="minutes"> ` + s +` </div>`;
+      return ` <div id="minutes"><p style="color: black;"> ` +m +` </p></div>`  + ':' + `<div id="minutes"><p style="color: black;"> ` + s +` </p></div>`;
   }
