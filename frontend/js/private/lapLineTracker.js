@@ -47,7 +47,7 @@ function renderCarButtonsOnce(drivers, raceName) {
     drivers.forEach(driver => {
         const btn = document.createElement("button");
         btn.classList.add("car-button");
-        btn.innerText = `Car ${driver.carNumber}`;
+        btn.innerHTML = `<p style="color: black;">Car ${driver.carNumber}</p>`;
         btn.addEventListener("click", () => completeLap(driver.carNumber));
         container.appendChild(btn);
     });

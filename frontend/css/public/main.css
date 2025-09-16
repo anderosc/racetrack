@@ -423,3 +423,32 @@ h1 {
 #flag.safe { background-color: green; }
 #flag.hazard { background-color: yellow; }
 #flag.danger { background-color: red; }
+
+#buttonsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  /* max-width: 1000px; */
+  margin: auto;
+  box-sizing: border-box;
+}
+
+/* Large tappable buttons */
+.car-button {
+  padding: 40px;
+  font-size: 1.5rem;
+  background-color: #ffffff;
+  color: black;
+  border: 5px solid #88722e;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  height: 100%;
+}
+
+/* Hover effect (optional) */
+.car-button:hover {
+  background-color: #9e9e9e;
+}

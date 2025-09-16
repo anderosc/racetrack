@@ -24,5 +24,5 @@ function toggleNavBar() {
 }
 
 function isMobileOrTablet() {
-    return window.innerWidth <= 1024; // Customize the threshold if needed
+    return window.innerWidth <= 1024;
 }

@@ -8,8 +8,10 @@
   }
 
   .loginbox {
-    width: 80%;
-    height: auto;
+    position: static;
+    transform: none;
+    margin: 20px auto;
+    display: block;
   }
 
   .button {
@@ -134,5 +136,20 @@
 
   button {
     font-size: 1em;
+  }
+}
+
+/* Tablet-specific tweaks */
+@media (orientation: landscape) {
+  #buttonsContainer {
+    grid-template-columns: repeat(4, 1fr); /* 4 columns in landscape */
+    grid-template-rows: repeat(2, auto);
+  }
+}
+
+@media (orientation: portrait) {
+  #buttonsContainer {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns in portrait */
+    grid-template-rows: repeat(4, auto);
   }
 }
