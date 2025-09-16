@@ -12,14 +12,12 @@ function showError(message) {
     ${message}
   `;
 
-  // Add close functionality
   box.querySelector(".close-btn").onclick = () => {
     container.removeChild(box);
   };
 
   container.appendChild(box);
 
-  // Auto-remove after 5 seconds (matches CSS animation)
   setTimeout(() => {
     if (container.contains(box)) {
       container.removeChild(box);
@@ -634,6 +632,11 @@ socket.on('raceSession:get:success', (raceSession) => {
 
 socket.on('raceSession:delete:success', ({ sessionName }) => {
     deleteRaceBox(sessionName);
+});
+
+socket.on('race:update', (raceTrackState) => {
+    const currentRaceName = raceTrackState.currentRace.sessionName;
+    deleteRaceBox(currentRaceName);
 });
 
 socket.on('raceSession:driver:add:success', ({ sessionName, driverName, carNumber }) => {

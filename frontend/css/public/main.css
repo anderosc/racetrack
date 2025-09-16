@@ -294,3 +294,129 @@ img.flip {
     transform: translateY(10px);
   }
 }
+
+#minutes, #seconds {
+    display: inline-block;
+    min-width: 50px;
+    text-align: center;
+    color: #222;
+    background-color: #d5d5d5;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin: 0 5px;
+    box-shadow: 0 2px 5px rgba(255, 255, 255, 0.5);
+}
+
+button {
+    font-size: 1.5vw;
+    padding: 1.1vw 1.5vw;
+    margin: 5px;
+    border: none;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #9e9e9e;
+    transform: scale(1.05);
+}
+
+#controls > div {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+#raceControls {
+    display: flex;
+    justify-content: center;
+    gap: 10px; 
+    margin: 10px 0;
+}
+
+#safe { background-color: #4CAF50; }
+#safe:hover { background-color: #3e8e41; }
+
+#hazard { background-color: #FFC107; }
+#hazard:hover { background-color: #e6ac00; }
+
+#danger { background-color: #F44336; }
+#danger:hover { background-color: #c0392b; }
+
+#finish { background-color: #ffffff; } 
+#finish:hover { background-color: #c1c1c1; }
+
+button:active {
+  transform: scale(1.1);
+}
+
+.current-session {
+    display: flex;
+    height: 100vh;
+    text-align: center;
+    justify-content:  center;
+    align-items: center;
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+#table {
+  margin: 0 auto;
+  border-collapse: collapse;
+  width: 50%;
+  background-color: #403636;
+}
+
+#table th, 
+#table td {
+  border: 1px solid #fff;
+  padding: 10px 15px;
+  text-align: center;
+}
+
+#table th {
+  background-color: #474747;
+  font-weight: bold;
+}
+
+#nextSession {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+/* Set flag to full height and width */
+#flag {
+  width: 100vw;
+  height: 100vh;
+  background-color: aliceblue;
+  border: 2px solid black;
+}
+/* If there is no flag then the background is white */
+#flag {
+  background-color: rgb(255, 255, 255);
+  border: 2px solid black;
+}
+
+.white {
+  background-color: white;
+}
+
+.black {
+  background-color: black;
+}
+.chessboard{
+    width: 400px;
+    height: 400px;
+    display: grid;
+    grid-template-columns: repeat(8, 50px);
+    grid-template-rows: repeat(8, 50px);
+}
+
+/* Solid flags - standard colours */
+#flag.safe { background-color: green; }
+#flag.hazard { background-color: yellow; }
+#flag.danger { background-color: red; }

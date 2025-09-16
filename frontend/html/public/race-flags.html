@@ -3,71 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>Race Flag</title>
-  <link rel="stylesheet" type="text/css" href="/css/public/race-flags.css">
-
+  <link rel="stylesheet" type="text/css" href="/css/public/main.css">
 </head>
-<body>
+<body style="overflow: hidden;">
   <div>
-    <!-- <h1>Race Flags</h1> -->
     <div id="main">
       <div id="flag"> 
       </div>
     </div>
     <div id="err" style="display: none;">No ongoing races!</div>
   </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script type="module">
-    const socket = io();
-    const body =document.getElementById("main")
-    const err = document.getElementById("err");
-    const flag = document.getElementById("flag");
-
-  function renderFlag(state) {
-    if (!state.currentRace) {
-        return; 
-    }
-    flag.innerHTML = "";
-
-    console.log(state.currentRace.raceMode)
-  // remove prev classes, add "flag"
-    flag.className = "flag";
-    // add new class (flag colour)
-    flag.classList.add(state.currentRace.raceMode.toLowerCase());
-
-    //If the flag is "finish", generate "chess table" as "Chequered Black/White"
-    if(flag.classList.contains("finish")){
-    flag.style.display = "grid";
-    flag.style.gridTemplateRows = "repeat(8, 1fr)";
-    flag.style.gridTemplateColumns = "repeat(8, 1fr)";
-    flag.innerHTML = "";
-        for(let i = 0; i<= 7; i++){
-
-            for(let j = 0; j<= 7; j++){
-            const square = document.createElement("div");
-            square.classList.add("square");
-            square.id = (`square-${i + 1}-${j + 1}`);
-
-            if((i + j) % 2 === 0){
-                square.style.backgroundColor = "white";
-            }else{
-                square.style.backgroundColor = "black";
-            }
-        flag.appendChild(square);
-        }
-    } }
-  }
-
-    // If connected, get update
-    socket.on("connect", () => {
-      socket.emit("state:get");
-    });
-
-    // Take data and call function to update ui. Listen to future updates.
-    socket.on("race:update", (state) => {
-      renderFlag(state);
-    });
-
-  </script>
 </body>
 </html>
+
+<script src="/socket.io/socket.io.js"></script>
+<script type="module" src="/js/public/race-flags.js"></script>
