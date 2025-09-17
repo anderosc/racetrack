@@ -58,7 +58,6 @@ function renderRaceState(state) {
                       endSessionBtn.style.display = "block"
                       raceControls.style.display = "none"
                 }
-                // console.log("this is the state" , state)
             }, 1000);
         }
       return

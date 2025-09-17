@@ -47,7 +47,6 @@ import { raceTrackState, saveState  } from './state.js';
   });
 
   socket.on('race:start', () => {
-    console.log("Start tirggerd")
     if(!isLoggedIn(socket, 'raceControl')){        socket.emit('racecontrol:error', 
       {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
       return;
@@ -58,10 +57,8 @@ import { raceTrackState, saveState  } from './state.js';
     if (!success) {
       return; 
     }
-    console.log("Success")
 
     saveState();
-    // console.log(state)
     raceTrackState.currentRace.raceMode = "Safe"
     raceTrackState.currentRace.isStarted = true;
     raceTrackState.currentRace.isEnded = false;
@@ -161,7 +158,6 @@ import { raceTrackState, saveState  } from './state.js';
   try{
     //Is next session created?
     if (!raceTrackState.upComingRaces?.[0]){
-      // console.log("sessionname: " , raceTrackState.upComingRaces[0].sessionName)
        socket.emit("racecontrol:error", { 
         message: "No upcoming races", 
         error: "" 
@@ -178,7 +174,6 @@ import { raceTrackState, saveState  } from './state.js';
 
       return false;
     }
-        console.log(raceTrackState.upComingRaces[0].drivers.length)
 
     //Do drivers have name and car
     for(const driver of raceTrackState.upComingRaces[0].drivers){
