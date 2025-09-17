@@ -178,12 +178,17 @@ socket.on("login", (res) => {
     });
 
   socket.on("racecontrol:error", (errorMessage) =>{
-    startRaceBtn.style.display = "none";
+    console.log("we got an error:", errorMessage)
+    startRaceBtn.style.display = "block";
     raceControls.style.display = "none";
     endSessionBtn.style.display = "none";
     session.style.display = "none"
     errTag.innerHTML = errorMessage.message + ":" + errorMessage.error
     errTag.style.display = "block"
+
+    if(timerInterval){
+      clearInterval(timerInterval)
+    }
   })
     
 
