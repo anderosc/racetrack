@@ -47,13 +47,19 @@ import { raceTrackState, saveState  } from './state.js';
   });
 
   socket.on('race:start', () => {
-      if(!isLoggedIn(socket, 'raceControl')){
-        socket.emit('racecontrol:error', 
-        {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
-        return;
-      }
+    console.log("Start tirggerd")
+    if(!isLoggedIn(socket, 'raceControl')){        socket.emit('racecontrol:error', 
+      {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
+      return;
+    }
 
-    assignNextRace()
+    //Lets
+    const success = assignNextRace();
+    if (!success) {
+      return; 
+    }
+    console.log("Success")
+
     saveState();
     // console.log(state)
     raceTrackState.currentRace.raceMode = "Safe"
@@ -154,22 +160,26 @@ import { raceTrackState, saveState  } from './state.js';
   //Before assigning next race and making changes in object, check if the data is correct
   try{
     //Is next session created?
-    if (!raceTrackState.upComingRaces?.[0]?.sessionName){
+    if (!raceTrackState.upComingRaces?.[0]){
       // console.log("sessionname: " , raceTrackState.upComingRaces[0].sessionName)
        socket.emit("racecontrol:error", { 
         message: "No upcoming races", 
         error: "" 
       });
-      return;
+
+      return false;
     }
     //Are there any drivers assigned?
     if(raceTrackState.upComingRaces[0].drivers.length === 0){
       socket.emit("racecontrol:error", {
-        message: "No upcoming races",
+        message: "Missing drivers from next race",
         error: ""
       })
-      return;
+
+      return false;
     }
+        console.log(raceTrackState.upComingRaces[0].drivers.length)
+
     //Do drivers have name and car
     for(const driver of raceTrackState.upComingRaces[0].drivers){
       if (!driver.name || driver.name.trim() === "") {
@@ -177,14 +187,16 @@ import { raceTrackState, saveState  } from './state.js';
         message: "Missing driver name in drivers list.",
         error: JSON.stringify(driver)
         })
-      return;
+
+      return false;
       }
       if (driver.carNumber == null) {
         socket.emit("racecontrol:error", {
         message: "Missing assigned car in drivers list.",
         error: JSON.stringify(driver)
         })
-      return;
+
+      return false;
       }
     }
     
@@ -198,8 +210,10 @@ import { raceTrackState, saveState  } from './state.js';
       durationSeconds: raceTrackState.upComingRaces[0].durationSeconds,
       raceMode: null,
     }
+
   //Remove first element fromt upComingRace
   raceTrackState.upComingRaces.shift();
+  return true;
     
     } catch(err){
       console.error("Error in next race assignment:", err);
