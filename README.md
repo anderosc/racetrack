@@ -60,14 +60,17 @@ The system uses Node.js and Socket.IO to ensure all interfaces and displays reac
 | Next Race        | Race Driver   | /next-race          |
 | Race Countdown   | Race Driver   | /race-countdown     |
 | Race Flags       | Race Driver   | /race-flags         |
+
 **Leader Board**
 
 **Next Race**
+
 ![alt text](/images/image-2.png)
 - The user will see next race session with drivers' names and car numbers.
 
 **Race Countdown**
-![alt text]/images/(image-4.png)
+
+![alt text](/images/image-4.png)
 - The user will see race countdown timer
 
 **Race Flags**
@@ -89,12 +92,12 @@ cd racetrack
 3. Before starting the server, set the required keys to repository root .env file (create new .env file):
 
 ```bash
-export PORT=3000
-export NODE_ENV=development
-export NODE_ENV=production
-export receptionist_key=8ded6076
-export observer_key=662e0f6c
-export safety_key=a2d393bc
+PORT=3000
+NODE_ENV=development
+NODE_ENV=production
+receptionist_key=8ded6076
+observer_key=662e0f6c
+safety_key=a2d393bc
 ```
 
 4. Install dependencies and start server

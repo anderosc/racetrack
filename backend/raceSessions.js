@@ -26,7 +26,6 @@ export function raceSessions(io, socket) {
     });
 
     socket.on('raceSession:create', (nextRaceSession) => {
-        //CHECK FOR AUTHORIZATION
         if(!isLoggedIn(socket, 'receptionist')){
             socket.emit('raceSession:create:failure', {error: 'User is not logged in.'});
             return;
@@ -105,26 +104,21 @@ export function raceSessions(io, socket) {
             socket.emit('raceSession:driver:add:failure', { error: 'Driver with this name already exists in the session.' });
             return;
         }
-
         // Get list of already used car numbers
         const usedCarNumbers = session.drivers.map(driver => driver.carNumber);
-
         let assignedCarNumber = null;
-
+        
         if (requestedCarNumber === 0) {
-            // Auto-assign the first available car number
             for (let i = 1; i <= 8; i++) {
                 if (!usedCarNumbers.includes(i)) {
                     assignedCarNumber = i;
                     break;
                 }
             }
-
             if (!assignedCarNumber) {
                 socket.emit('raceSession:driver:add:failure', { error: 'No available car numbers.' });
                 return;
             }
-
         } else if (requestedCarNumber >= 1 && requestedCarNumber <= 8) {
             // Check if the requested car number is available
             if (usedCarNumbers.includes(requestedCarNumber)) {
@@ -139,7 +133,6 @@ export function raceSessions(io, socket) {
             return;
         }
 
-        // Add the driver to the session
         session.drivers.push({
             name: driverName,
             carNumber: assignedCarNumber,

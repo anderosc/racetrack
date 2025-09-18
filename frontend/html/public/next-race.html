@@ -3,29 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <title>Next Race</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="/css/public/main.css">
+  <link rel="stylesheet" type="text/css" href="/css/public/mobile.css">
 </head>
 <body>
-
-  <div style="text-align: center;">
-    <p>Next Race</p>
-    <div id="main">
-      <div id="nextSession"></div>
-      <table id="table"> 
-        <thead> 
-          <tr> 
-            <th><p>Driver</p></th> 
-            <th><p>Car Number</p></th> 
-          </tr> </thead> 
-        <tbody id="tableBody"> 
-        </tbody> 
-      </table>
+  <button id="fullScreen" onclick="openFullscreen()">Full Screen</button>
+  <div id="content">
+    <div style="text-align: center;">
+      <p>Next Race</p>
+      <div id="main">
+        <div id="nextSession"></div>
+        <table id="table"> 
+          <thead> 
+            <tr> 
+              <th><p>Driver</p></th> 
+              <th><p>Car Number</p></th> 
+            </tr> </thead> 
+          <tbody id="tableBody"> 
+          </tbody> 
+        </table>
+      </div>
+      <div id="err" style="display: none;"><p>No upcoming races!</p></div>
     </div>
-    <div id="err" style="display: none;"><p>No upcoming races!</p></div>
-
   </div>
 </body>
 </html>
 
 <script src="/socket.io/socket.io.js"></script>
 <script type="module" src="/js/public/next-race.js"></script>
+<script src="/js/public/fullScreen.js"></script>

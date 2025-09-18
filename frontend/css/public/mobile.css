@@ -35,7 +35,7 @@
 
   .inner-box-small {
     position: relative;
-    width: 100%;
+    width: calc(100% - 20px);
     height: auto;
     right: 0;
     margin-top: 10px;
@@ -70,6 +70,10 @@
     border: none;
     justify-content: center;
     margin-top: 10px;
+  }
+
+  #createRaceSession {
+    border: 5px solid #88722e;
   }
 
 }
@@ -137,6 +141,10 @@
   button {
     font-size: 1em;
   }
+
+  #createRaceSession {
+    border: 5px solid #88722e;
+  }
 }
 
 /* Tablet-specific tweaks */
@@ -151,5 +159,43 @@
   #buttonsContainer {
     grid-template-columns: repeat(2, 1fr); /* 2 columns in portrait */
     grid-template-rows: repeat(4, auto);
+  }
+}
+
+@media (max-width: 768px) {
+  #leaderboardTable th,
+  #leaderboardTable td {
+    padding: 4px;
+    font-size: 14px;
+  }
+
+  .session-header {
+    font-size: 18px;
+  }
+
+  .session-header h2 {
+    font-size: 20px;
+    }
+
+}
+
+@media only screen and (max-width: 1024px) {
+  #fullScreen {
+    display: none;
+  }
+  .raceFlagIcon {
+    display: none;
+  }
+  .driver-number {
+    display: none;
+  }
+  .drivers-box .edit {
+    right: 80px;
+  }
+  .edit1.inner-box-small {
+    right: 0px;
+  }
+  .save.inner-box-small {
+    right: 0px;
   }
 }

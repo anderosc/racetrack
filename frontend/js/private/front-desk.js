@@ -116,7 +116,7 @@ function createRaceBox(raceName) {
 
     // Create first flipped flag icon
     const flagIconLeft = document.createElement('img');
-    flagIconLeft.className = 'icon flip';
+    flagIconLeft.className = 'raceFlagIcon icon flip';
     flagIconLeft.src = '/img/raceFlagIcon.png';
     innerBox.appendChild(flagIconLeft);
 
@@ -128,7 +128,7 @@ function createRaceBox(raceName) {
 
     // Create second flag icon
     const flagIconRight = document.createElement('img');
-    flagIconRight.className = 'icon';
+    flagIconRight.className = 'raceFlagIcon icon';
     flagIconRight.src = '/img/raceFlagIcon.png';
     innerBox.appendChild(flagIconRight);
 
@@ -146,7 +146,7 @@ function createRaceBox(raceName) {
     // Create edit button
     const editBox = document.createElement('div');
     editBox.className = 'edit inner-box-small';
-    editBox.style.right = '80px';
+    /*editBox.style.right = '80px';*/
     editBox.addEventListener("click", editRaceSession);
 
     const editIcon = document.createElement('img');
@@ -314,10 +314,7 @@ function createRaceDriversBox(drivers) {
         driverItem.appendChild(deleteBox);
 
         const editBox = document.createElement('div');
-        editBox.className = 'edit inner-box-small';
-        editBox.style.height = '55px';
-        editBox.style.width = '60px';
-        editBox.style.right = '60px';
+        editBox.className = 'edit1 inner-box-small';
 
         const editImg = document.createElement('img');
         editImg.className = 'icon-small';
@@ -412,12 +409,13 @@ function editDriver(event) {
 
     const nameInput = document.createElement("input");
     //nameInput.id = "";
+    nameInput.className = "race-driver-name";
     nameInput.type = "text";
     nameInput.value = driverNameOld || "";
-    nameInput.style.padding = "5px";
+    //nameInput.style.padding = "5px";
 
     const carSelect = document.createElement("select");
-    carSelect.style.padding = "5px";
+    carSelect.style.padding = "10px";
 
     for (let i = 1; i <= 8; i++) {
         const option = document.createElement("option");
@@ -431,9 +429,6 @@ function editDriver(event) {
 
     const saveBox = document.createElement('div');
     saveBox.className = 'save inner-box-small';
-    saveBox.style.height = '55px';
-    saveBox.style.width = '60px';
-    saveBox.style.right = '125px';
 
     const saveImg = document.createElement('img');
     saveImg.className = 'icon-small';
@@ -528,7 +523,6 @@ function createRaceDriverBox(raceSessionName, driverName, carNumber) {
     editBox.className = 'delete inner-box-small';
     editBox.style.height = '55px';
     editBox.style.width = '60px';
-    editBox.style.right = '60px';
     editBox.addEventListener("click", editDriver);
 
     const editImg = document.createElement('img');

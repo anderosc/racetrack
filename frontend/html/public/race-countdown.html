@@ -4,20 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="/css/public/main.css">
+  <link rel="stylesheet" type="text/css" href="/css/public/mobile.css">
   <title>Race Countdown</title>
 </head>
 <body>
-
-  <div class="current-session">
-    <div id="current-session">
-      <p>Race Countdown</p>
-      <div id="raceTimer"> <div id="minutes"><p style="color: black;"> 0 </p></div> : <div id="minutes"><p style="color: black;"> 0 </p></div> </div>
+  <button id="fullScreen" onclick="openFullscreen()">Full Screen</button>
+  <div id="content">
+    <div class="current-session">
+      <div id="current-session">
+        <p>Race Countdown</p>
+        <div id="raceTimer"> <div id="minutes"><p style="color: black;"> 0 </p></div> : <div id="minutes"><p style="color: black;"> 0 </p></div> </div>
+      </div>
+      <div id="err" style="display: none;">No ongoing races!</div>
     </div>
-    <div id="err" style="display: none;">No ongoing races!</div>
-
   </div>
 </body>
 </html>
 
 <script src="/socket.io/socket.io.js"></script>
 <script type="module" src="/js/public/race-countdown.js"></script>
+<script src="/js/public/fullScreen.js"></script>

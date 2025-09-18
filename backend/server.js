@@ -16,10 +16,24 @@ import { raceControl } from './raceControl.js';
 import { raceTrackState } from './state.js';
 import { raceSessions } from './raceSessions.js';
 
+const requiredEnvVars = ['receptionist_key', 'observer_key', 'safety_key'];
+
+const missingVars = requiredEnvVars.filter(key => !process.env[key]);
+
+if (missingVars.length > 0) {
+    console.error(`❌ Error: Missing required environment variables: ${missingVars.join(', ')}`);
+    console.error('\nUsage:\n');
+    console.error('  export receptionist_key=8ded6076');
+    console.error('  export observer_key=662e0f6c');
+    console.error('  export safety_key=a2d393bc');
+    console.error('\nThen run:\n');
+    console.error('  npm start');
+    process.exit(1); // Stop the server from starting
+}
+
 const app = express();
 const server = createServer(app);
-// const port = process.env.PORT;
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const io = new Server(server, {
   connectionStateRecovery: {}
@@ -76,16 +90,16 @@ io.on('connection', (socket) => {
         const receptionistToken = parsedCookies.receptionist_token;
         const raceControlToken = parsedCookies.raceControl_token;
         const lapLineTrackerToken = parsedCookies.lapLineTracker_token;
-        if (receptionistToken === process.env.RECEPTIONIST_KEY) {
+        if (receptionistToken === process.env.receptionist_key) {
             socket.emit('login', { persona: 'receptionist', status: true, cookie: true });
             socket.join('receptionist');
             socket.emit('raceList', raceTrackState.upComingRaces);
         }
-        if (raceControlToken === process.env.SAFETY_KEY) {
+        if (raceControlToken === process.env.safety_key) {
             socket.emit('login', { persona: 'raceControl', status: true, cookie: true });
             socket.join('raceControl');
         }
-        if (lapLineTrackerToken === process.env.LAPLINETRACKER_KEY) {
+        if (lapLineTrackerToken === process.env.observer_key) {
             socket.emit('login', { persona: 'lapLineTracker', status: true, cookie: true });
             socket.join('lapLineTracker');
         }
@@ -98,7 +112,7 @@ io.on('connection', (socket) => {
         const token = msg.token;
 
         if(persona === "receptionist") {
-            if(token === process.env.RECEPTIONIST_KEY) {
+            if(token === process.env.receptionist_key) {
                 socket.emit('login', { persona: persona, status: true });
                 socket.join('receptionist');
                 socket.emit('raceList', raceTrackState.upComingRaces);
@@ -109,7 +123,7 @@ io.on('connection', (socket) => {
             }
         }
         if(persona === "raceControl") {
-            if(token === process.env.SAFETY_KEY) {
+            if(token === process.env.safety_key) {
                 socket.emit('login', { persona: persona, status: true });
                 socket.join('raceControl');
             }else {
@@ -119,7 +133,7 @@ io.on('connection', (socket) => {
             }
         }
         if(persona === "lapLineTracker") {
-            if(token === process.env.LAPLINETRACKER_KEY) {
+            if(token === process.env.observer_key) {
                 socket.emit('login', { persona: persona, status: true });
                 socket.join('lapLineTracker');
             } else {

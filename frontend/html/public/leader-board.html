@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="/css/public/main.css">
+    <link rel="stylesheet" type="text/css" href="/css/public/mobile.css">
     <title>Leaderboard</title>
 </head>
 <body>
@@ -19,6 +20,7 @@
         <a href="/race-flags"><div class="button"><p>Race Flag</p></div></a>
     </div>
     <div id="content" class="right">
+        <button id="fullScreen" onclick="openFullscreen()">Full Screen</button>
         <div id="showNavBarBtn" class="showNavBar">
             <div class="navBarBox"></div>
             <div class="navBarBox"></div>
@@ -43,3 +45,4 @@
 <script src="/js/public/navBarToggle.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/public/leaderBoard.js"></script>
+<script src="/js/public/fullScreen.js"></script>

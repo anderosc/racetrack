@@ -9,7 +9,7 @@ import { raceTrackState, saveState  } from './state.js';
 
         function isLoggedIn(socket, room) {
           return socket.rooms.has(room);
-      }
+        }
 
       //"Immediately Invoked Function Expression"
       // Check before if server was closed before and do we have current race saved data. If yes, continue it.

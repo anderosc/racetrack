@@ -141,7 +141,7 @@ input[type=password] {
     margin-left: 10px;
 }
 
-#raceDriverName {
+#raceDriverName, .race-driver-name {
     padding: 10px;
     margin:10px;
 }
@@ -545,4 +545,25 @@ h1 {
 #miniFlag.safe { background-color: green; }
 #miniFlag.hazard { background-color: yellow; }
 #miniFlag.danger { background-color: red; }
+
+#fullScreen {
+    position: absolute;
+    right: 0;
+}
+
+.edit {
+    right: 80px;
+}
+
+.edit1.inner-box-small {
+    height: 55px;
+    width: 60px;
+    right: 60px;
+}
+
+.save.inner-box-small {
+    height: 55px;
+    width: 60px;
+    right: 125px;
+}
 

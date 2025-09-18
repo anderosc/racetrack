@@ -5,6 +5,10 @@ let lastRaceName = null;
 
 export function handleLapTracking(io, socket, raceTrackState) {
 
+    function isLoggedIn(socket, room) {
+        return socket.rooms.has(room);
+    }
+
     // reset drivers when new race starts or leaderboard request update
     function ensureActiveDriversReset() {
         const currentRace = raceTrackState.currentRace;
@@ -35,6 +39,12 @@ export function handleLapTracking(io, socket, raceTrackState) {
 
     // handle lap completion
     socket.on('lap:completed', ({driver}) => {
+
+        if(!isLoggedIn(socket, 'lapLineTracker')){
+            socket.emit('lap:completed:failure', {error: 'User Is Not Logged in.'});
+            return;
+        }
+
         ensureActiveDriversReset();
 
         const now = Date.now();

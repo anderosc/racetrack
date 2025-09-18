@@ -3,18 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>Race Flag</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="/css/public/main.css">
+  <link rel="stylesheet" type="text/css" href="/css/public/mobile.css">
 </head>
 <body style="overflow: hidden;">
-  <div>
-    <div id="main">
-      <div id="flag"> 
+  <button id="fullScreen" onclick="openFullscreen()">Full Screen</button>
+  <div id="content">
+    <div>
+      <div id="main">
+        <div id="flag"> 
+        </div>
       </div>
+      <div id="err" style="display: none;">No ongoing races!</div>
     </div>
-    <div id="err" style="display: none;">No ongoing races!</div>
   </div>
 </body>
 </html>
 
 <script src="/socket.io/socket.io.js"></script>
 <script type="module" src="/js/public/race-flags.js"></script>
+<script src="/js/public/fullScreen.js"></script>
