@@ -35,10 +35,9 @@ function logout() {
 // Listen serverist tulevat state'i
 function renderRaceState(state) {
 
-  console.log("Got state from server:", state);
 
   // Check if there is ongoing race and start it again
-  if (state.currentRace?.isStarted && state.currentRace.durationSeconds > 0) {
+  if (state.currentRace?.isStarted && state.currentRace.durationSeconds > 0 && state.currentRace?.raceMode != "Finish") {
     startRaceBtn.style.display = "none";
     raceControls.style.display = "block";
     endSessionBtn.style.display = "none";
@@ -46,6 +45,7 @@ function renderRaceState(state) {
     session.style.display = "block"
     session.innerHTML = `Current session :` + state.currentRace.sessionName
      if (!timerInterval) {
+
             timerInterval = setInterval(() => {
                 if (state.currentRace.durationSeconds > 0) {
                     state.currentRace.durationSeconds--;
@@ -69,6 +69,10 @@ function renderRaceState(state) {
     errTag.style.display = "none"
     session.style.display = "block"
     session.innerHTML = `Current session :` + state.currentRace.sessionName
+    if(timerInterval){
+      clearInterval(timerInterval)
+      timerInterval = null
+    }
     return
   } else if (state.currentRace?.raceMode === "Danger" && state.currentRace?.isEnded == true  ) {
 
