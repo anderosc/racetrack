@@ -18,6 +18,7 @@ import { raceTrackState, saveState  } from './state.js';
       if (!timerInterval && raceTrackState.currentRace.isStarted && !raceTrackState.currentRace.isEnded) {
           timerInterval = setInterval(() => {
               raceTrackState.currentRace.durationSeconds -= 1;
+              io.emit('state:update', raceTrackState); // sync leaderboard timer
               // If timer reaches 0
               if (raceTrackState.currentRace.durationSeconds <= 0) {
                   clearInterval(timerInterval);
