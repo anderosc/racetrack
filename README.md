@@ -37,20 +37,20 @@ The system uses Node.js and Socket.IO to ensure all interfaces and displays reac
 | Lap-line Tracker   | Lap-line Observer  | /lap-line-tracker|
 
 **Front Desk**
-![alt text](image.png)
+![alt text](/images/image.png)
 - User can create new race session by clicking "CREATE RACE SESSION" button (enter a name to input field).
 - Clicking on driver icon allows user to add new driver. Clicking on delete icon, removes that.
 - Enter the driver's name and click "ADD DRIVER". Optionally, a car can be assigned.
 - User can edit the driver or delete it.
 
 **Race Control**
-![alt text](image-1.png)
+![alt text](/images/image-1.png)
 - User can start the race.
 - If next session drivers exist, the race starts and user can change the flag of current race. Early race finish is possible by clicking on "FINISH".
 - After finishing, the flag is set to "finish", and the user must end the session.
 
 **Lap-line Tracker**
-![alt text](image-3.png)
+![alt text](/images/image-3.png)
 - Once the race starts, user can tap on car number to track laps. 
 
 ### Public Displays
@@ -63,11 +63,11 @@ The system uses Node.js and Socket.IO to ensure all interfaces and displays reac
 **Leader Board**
 
 **Next Race**
-![alt text](image-2.png)
+![alt text](/images/image-2.png)
 - The user will see next race session with drivers' names and car numbers.
 
 **Race Countdown**
-![alt text](image-4.png)
+![alt text]/images/(image-4.png)
 - The user will see race countdown timer
 
 **Race Flags**
