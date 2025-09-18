@@ -18,10 +18,7 @@ let currentRace = null;
 // listen for leaderboard updates
 socket.on('leaderboard:update', (drivers) => {
     lastRaceDrivers = JSON.parse(JSON.stringify(drivers)); // deep copy for freeze
-    if (currentRace && currentRace.raceMode !== "Finish") {
-        // only update if race is active
-        renderLeaderBoard(drivers);
-    }
+    renderLeaderBoard(drivers);
 });
 
 socket.on('state:update', (state) => {
@@ -36,42 +33,46 @@ socket.on('state:update', (state) => {
     }
 
     // update flag
-    if (currentRace && currentRace.raceMode) {
-        switch (currentRace.raceMode) {
-            case "Safe": flagStatusElement.innerText = "Flag: Green (Safe)"; break;
-            case "Hazard": flagStatusElement.innerText = "Flag: Yellow (Hazard)"; break;
-            case "Danger": flagStatusElement.innerText = "Flag: Red (Danger)"; break;
-            case "Finish": flagStatusElement.innerText = "Flag: Checkered (Finish)"; break;
-            default: flagStatusElement.innerText = `Flag: ${currentRace.raceMode}`;
-        }
-    } else {
-        flagStatusElement.innerText = "Flag: --"
+    renderMiniFlag(state)
+
+    if (currentRace?.isStarted && !currentRace.isEnded) {
+        socket.emit('leaderboard:request');
     }
 
-    // update leaderboard
-    if (!currentRace || !currentRace.drivers || currentRace.drivers.length === 0) {
-        renderLeaderBoard({});
-        return;
-    }
-    if (currentRace.raceMode === "Finish") {
-        renderLeaderBoard(lastRaceDrivers);
-    } else {
-        renderLeaderBoard(lastRaceDrivers);
-    }
 });
 
 function renderLeaderBoard(drivers) {
+    const container = document.getElementById("leaderBoard");
+    container.innerHTML = ''; // clear previous content
+
     const raceName = currentRace.sessionName;
-    leaderboardDiv.innerHTML = `<h2>Session name: ${raceName}</h2>`;
+    leaderboardDiv.innerHTML = `
+    <div class="session-header">
+        <h2>Race Session: ${raceName.toUpperCase()}</h2>
+        <hr class="session-divider">
+    </div>
+    `;
+
 
     const driverKeys = Object.keys(drivers);
-
     if (driverKeys.length === 0) {
         leaderboardDiv.innerHTML += '<p>No race data yet.</p>';
         return;
     }
+    const tableWrapper = document.createElement('div');
+    tableWrapper.className = 'table-wrapper';
 
-    const ul = document.createElement('ul');
+    const table = document.createElement("table");
+    table.id = "leaderboardTable";
+
+    // header row
+    const headerRow = document.createElement("tr");
+    ['Position', 'Driver', 'Car', 'Current Lap', 'Fastest Lap'].forEach(text => {
+        const th = document.createElement("th");
+        th.textContent = text;
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
 
     // sort drivers by lap times
     const sortedDrivers = driverKeys.sort((a, b) => {
@@ -80,19 +81,66 @@ function renderLeaderBoard(drivers) {
         return fastestA - fastestB;
     });
 
-    sortedDrivers.forEach(driverId => {
+    sortedDrivers.forEach((driverId, index) => {
         const driver = drivers[driverId];
         const fastestLap = driver.lapTimes.length
             ? formatLapTime(Math.min(...driver.lapTimes))
             : '-';
 
-        const li = document.createElement('li');
         const currentLap = driver.lapsCompleted + 1;
-        li.textContent = `Car ${driverId} - Current lap: ${currentLap}, Fastest Lap: ${fastestLap}`;
-        ul.appendChild(li);
+
+        const driverName = currentRace.drivers.find(d => d.carNumber === parseInt(driverId))?.name || `Car ${driverId}` ;
+        const formattedName = driverName.charAt(0).toUpperCase() + driverName.slice(1);
+
+        const row = document.createElement("tr");
+        const position = index + 1;
+        [position, formattedName, driverId, currentLap, fastestLap].forEach(text => {
+            const td = document.createElement("td");
+            td.textContent = text;
+            row.appendChild(td);
+        });
+        table.appendChild(row);
     });
 
-    leaderboardDiv.appendChild(ul);
+    tableWrapper.appendChild(table);
+    container.appendChild(tableWrapper);
+}
+
+// mini flag under leaderboard
+function renderMiniFlag(state) {
+    const flag = document.getElementById("miniFlag");
+    const label = document.getElementById("flagLabel");
+
+    if (!state.currentRace) return;
+
+    flag.innerHTML = "";
+    flag.className = "flag";
+
+    const mode = state.currentRace.raceMode?.toLowerCase();
+    if (mode) {
+        flag.classList.add(mode);
+        label.innerText = `Flag: ${state.currentRace.raceMode}`;
+    } else {
+        label.innerText = "Flag: --";
+    }
+
+    // checkered flag for finish
+    if (mode === "finish") {
+        flag.style.display = "grid";
+        flag.style.gridTemplateColumns = "repeat(4, 1fr)";
+        flag.style.gridTemplateRows = "repeat(4, 1fr)";
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                const square = document.createElement("div");
+                square.style.width = "100%";
+                square.style.height = "100%";
+                square.style.backgroundColor = (i + j) % 2 === 0 ? "white" : "black";
+                flag.appendChild(square);
+            }
+        }
+    } else {
+        flag.style.display = "block"; // reset for solid color flags
+    }
 }
 
 function formatLapTime(ms) {
@@ -104,6 +152,7 @@ function formatLapTime(ms) {
 
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
+
 
 socket.emit('race:requestState');
 socket.emit('leaderboard:request');

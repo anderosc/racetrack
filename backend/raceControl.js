@@ -18,6 +18,7 @@ import { raceTrackState, saveState  } from './state.js';
       if (!timerInterval && raceTrackState.currentRace.isStarted && !raceTrackState.currentRace.isEnded) {
           timerInterval = setInterval(() => {
               raceTrackState.currentRace.durationSeconds -= 1;
+              io.emit('state:update', raceTrackState); // sync leaderboard timer
               // If timer reaches 0
               if (raceTrackState.currentRace.durationSeconds <= 0) {
                   clearInterval(timerInterval);
@@ -80,6 +81,9 @@ import { raceTrackState, saveState  } from './state.js';
             raceTrackState.currentRace.durationSeconds = 0;
             raceTrackState.currentRace.raceMode = "Finish";
             io.emit("race:finish", raceTrackState)
+          // send timer updates every second to sync leaderboard
+          } else {
+            io.emit("state:update", raceTrackState)
           }
           saveState();
       } catch(err){
@@ -131,6 +135,7 @@ import { raceTrackState, saveState  } from './state.js';
     raceTrackState.currentRace.raceMode = "Danger"
     raceTrackState.currentRace.isEnded = true;
     io.emit("race:update",  raceTrackState);
+    io.emit('state:update', raceTrackState);
   })
 
   //Finish session
@@ -148,6 +153,7 @@ import { raceTrackState, saveState  } from './state.js';
   raceTrackState.currentRace.raceMode = "Finish"
   //Push currentrace to History array and set current race to null.
   io.emit("race:update",  raceTrackState);
+  io.emit('state:update', raceTrackState);
   });
 
 

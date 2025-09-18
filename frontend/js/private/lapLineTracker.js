@@ -37,6 +37,7 @@ socket.on('login', (msg) => {
 });
 
 let currentRaceName = null;
+let raceIsFinished = false;
 
 // dynamically create buttons based on currentRace drivers
 function renderCarButtonsOnce(drivers, raceName) {
@@ -59,39 +60,55 @@ function completeLap(carNumber) {
     socket.emit('lap:completed', { driver: carNumber });
 }
 
-// handle disabling buttons when race finishes
-function disableButtons() {
-    document.querySelectorAll(".car-button").forEach(btn => {
-        btn.disabled = true;
-        btn.classList.add("disabled");
-    });
+// handle removing buttons when race finishes
+function clearButtons() {
+    container.innerHTML = '';
 }
 
 // listen race state updates
 socket.on('state:update', (state) => {
+    if (raceIsFinished) return;
     const currentRace = state.currentRace;
 
 
-    if (!currentRace || !currentRace.drivers || currentRace.drivers.length === 0 || currentRace.isEnded) {
-        container.innerHTML = '<p>No Race found.</p>';
+    if (!currentRace || !currentRace.drivers || currentRace.drivers.length === 0 || currentRace.raceMode === "Finish" || currentRace.isEnded) {
+        container.innerHTML = `
+        <div class="centerDiv">
+            <p style="color: red;">No active races at the moment.</p>
+        </div>
+            `;
+
         currentRaceName = null;
         return;
     }
-
+    if (raceIsFinished) return;
     renderCarButtonsOnce(currentRace.drivers, currentRace.sessionName);
 
-    // disable buttons if race finished
-    if (currentRace.raceMode === 'Finish') {
-        disableButtons();
-    }
 });
+socket.on('race:finish', (state) => {
+    raceIsFinished = true;
+    container.innerHTML = `
+        <div class="centerDiv">
+            <p style="color: red;">No active races at the moment.</p>
+        </div>
+    `;
+    clearButtons();
+    currentRaceName = null;
+});
+
 socket.on('race:update', (state) => {
     const currentRace = state.currentRace;
     if (currentRace && currentRace.raceMode === 'Finish') {
-        disableButtons();
+        container.innerHTML = `
+        <div class="centerDiv">
+            <p style="color: red;">No active races at the moment.</p>
+        </div>
+            `;
+        clearButtons();
     }
 
 });
+
 
 socket.on('connect', () => {
     socket.emit('race:requestState');
