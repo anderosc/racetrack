@@ -523,3 +523,26 @@ h1 {
     font-weight: bold;
     color: #ffd700; /* gold */
 }
+.flag-display-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.flag-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#miniFlag {
+    width: 60px;
+    height: 60px;
+    border: 2px solid black;
+    border-radius: 4px;
+}
+
+#miniFlag.safe { background-color: green; }
+#miniFlag.hazard { background-color: yellow; }
+#miniFlag.danger { background-color: red; }
+

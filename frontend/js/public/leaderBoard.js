@@ -33,17 +33,8 @@ socket.on('state:update', (state) => {
     }
 
     // update flag
-    if (currentRace && currentRace.raceMode) {
-        switch (currentRace.raceMode) {
-            case "Safe": flagStatusElement.innerText = "Flag: Green (Safe)"; break;
-            case "Hazard": flagStatusElement.innerText = "Flag: Yellow (Hazard)"; break;
-            case "Danger": flagStatusElement.innerText = "Flag: Red (Danger)"; break;
-            case "Finish": flagStatusElement.innerText = "Flag: Checkered (Finish)"; break;
-            default: flagStatusElement.innerText = `Flag: ${currentRace.raceMode}`;
-        }
-    } else {
-        flagStatusElement.innerText = "Flag: --"
-    }
+    renderMiniFlag(state)
+
     if (currentRace?.isStarted && !currentRace.isEnded) {
         socket.emit('leaderboard:request');
     }
@@ -113,6 +104,43 @@ function renderLeaderBoard(drivers) {
 
     tableWrapper.appendChild(table);
     container.appendChild(tableWrapper);
+}
+
+// mini flag under leaderboard
+function renderMiniFlag(state) {
+    const flag = document.getElementById("miniFlag");
+    const label = document.getElementById("flagLabel");
+
+    if (!state.currentRace) return;
+
+    flag.innerHTML = "";
+    flag.className = "flag";
+
+    const mode = state.currentRace.raceMode?.toLowerCase();
+    if (mode) {
+        flag.classList.add(mode);
+        label.innerText = `Flag: ${state.currentRace.raceMode}`;
+    } else {
+        label.innerText = "Flag: --";
+    }
+
+    // checkered flag for finish
+    if (mode === "finish") {
+        flag.style.display = "grid";
+        flag.style.gridTemplateColumns = "repeat(4, 1fr)";
+        flag.style.gridTemplateRows = "repeat(4, 1fr)";
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                const square = document.createElement("div");
+                square.style.width = "100%";
+                square.style.height = "100%";
+                square.style.backgroundColor = (i + j) % 2 === 0 ? "white" : "black";
+                flag.appendChild(square);
+            }
+        }
+    } else {
+        flag.style.display = "block"; // reset for solid color flags
+    }
 }
 
 function formatLapTime(ms) {
