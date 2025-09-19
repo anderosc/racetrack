@@ -5,10 +5,19 @@ const stateFile = "raceState.json";
 
 // state.js
 export let raceTrackState = {
+  //Upcoming races -> pushed from front desk(?)
   upComingRaces: [],
-  currentRace: {}
+  //Race Control takes the first element of upComingRaces and assignes its values to currentRace. Then removes 
+  // first element of upComingRaces
+  currentRace: {
+    sessionName: "",
+    drivers: [],
+    durationSeconds: 0,
+    raceMode: "",
+    isStarted: false,
+    isEnded : true,
+  },
 }
-
 
 //Save state to file. If server is closed, data is saved.
 export function saveState() {
@@ -24,27 +33,3 @@ if (fs.existsSync(stateFile)) {
     // console.log("Loaded ");
 
 }
-
-
-
-
-//Structure of state --->>
-  //  {
-  //     sessionName: 'race2',
-  //     drivers: [
-  //       { 
-  //         name: 'Milvikas', 
-  //         carNumber: 1, 
-  //         fastestLap: null, 
-  //         currentLap: 0 },
-  //       { 
-  //         name: 'Endelhehe', 
-  //         carNumber: 2, 
-  //         fastestLap: null, 
-  //         currentLap: 0 },
-  //     ],
-  //     durationSeconds: null,
-  //     raceMode: "",
-  //     isStarted : false,
-  //     isEnded : false,
-  //   },
