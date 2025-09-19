@@ -6,14 +6,7 @@ const stateFile = "raceState.json";
 // state.js
 export let raceTrackState = {
   upComingRaces: [],
-  currentRace: {
-    sessionName: "",
-    drivers: [],
-    durationSeconds: 0,
-    raceMode: "",
-    isStarted: false,
-    isEnded : false,
-  },
+  currentRace: {}
 }
 
 
