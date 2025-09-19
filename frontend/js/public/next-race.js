@@ -20,18 +20,15 @@ function updateNextRace(state) {
       nextSession.style.display = "block";
       body.style.display = "block";
     }
-    
     const race = state.upComingRaces[0];
-    // if (!race?.sessionName) {
-    //   err.style.display = "block";
-    //   nextSession.style.display = "none";
-    //   body.style.display = "block";
-    //   console.log("mann")
-    //   return;
-    // }
+    if(state.currentRace?.isStarted && !state.currentRace?.isEnded){
+      nextSession.innerHTML = "<p> Next race session, proceed to the grid  </p>  <p>Session: " + race.sessionName + "  </p>";
+    } else{
+      nextSession.innerHTML = "<p>Next Session: " + race.sessionName + "</p>";
+    }
+    
 
     err.style.display = "none";
-    nextSession.innerHTML = "<p>Next Session: " + race.sessionName + "</p>";
 
     const tableBody = document.getElementById("tableBody");
 

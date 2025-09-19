@@ -57,6 +57,19 @@
           <button id="endSessionBtn"><p style="color: black;">End Session</p></button>
         </div>
       </div>
+      <br>
+      <div id="nextrace">
+        <div id="nextSession"></div>
+        <table id="table"> 
+          <thead> 
+            <tr> 
+              <th><p>Driver</p></th> 
+              <th><p>Car Number</p></th> 
+            </tr> </thead> 
+          <tbody id="tableBody"> 
+          </tbody> 
+        </table>
+      </div >
 
     <br>
     <br>
@@ -71,5 +84,5 @@
 </html>
 
 <script src="/socket.io/socket.io.js"></script>
-<script src="/js/private/race-control.js"></script>
+<script src="/js/private/race-control.js" defer></script>
 <script src="/js/public/navBarToggle.js"></script>
