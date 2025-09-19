@@ -15,7 +15,7 @@ export let raceTrackState = {
     durationSeconds: 0,
     raceMode: "",
     isStarted: false,
-    isEnded : false,
+    isEnded : true,
   },
 }
 
