@@ -7,37 +7,32 @@ import { raceTrackState, saveState  } from './state.js';
 
   export function raceControl(io, socket){
 
-        function isLoggedIn(socket, room) {
-          return socket.rooms.has(room);
+    //Check if user is logged in.
+    function Auth(socket, fn){
+      return (...args) => {
+        if(!isLoggedIn(socket, 'raceControl')){
+          socket.emit('racecontrol:error', {message:'User not logged in.', error:""});
+          return;
         }
+        fn(...args);
+      }
+    }
+    function isLoggedIn(socket, room) {
+      return socket.rooms.has(room);
+    }
 
       //"Immediately Invoked Function Expression"
       // Check before if server was closed before and do we have current race saved data. If yes, continue it.
     (function startRaceIfOngoing() {
 
       if (!timerInterval && raceTrackState.currentRace.isStarted && !raceTrackState.currentRace.isEnded) {
-          timerInterval = setInterval(() => {
-              raceTrackState.currentRace.durationSeconds -= 1;
-              io.emit('state:update', raceTrackState); // sync leaderboard timer
-              // If timer reaches 0
-              if (raceTrackState.currentRace.durationSeconds <= 0) {
-                  clearInterval(timerInterval);
-                  timerInterval = null;
-                  raceTrackState.currentRace.durationSeconds = 0;
-                  raceTrackState.currentRace.raceMode = "Finish";
-              }
-              saveState();
-          }, 1000);
+        startRaceTimer()
+        io.emit("state:update", raceTrackState) // sync leaderboard
       }
   })();
   
 
-  socket.on("race:init", () =>{
-      if(!isLoggedIn(socket, 'raceControl')){
-        socket.emit('racecontrol:error', 
-        {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
-        return;
-      }
+  socket.on("race:init", Auth(socket, () =>{
     try{
     
     socket.emit("race:update", raceTrackState)
@@ -45,9 +40,9 @@ import { raceTrackState, saveState  } from './state.js';
       console.error("Page init error:", err);
       socket.emit("racecontrol:error", { message: "Init error", error: err.toString() });
     }
-  });
+  }));
 
-  socket.on('race:start', () => {
+  socket.on('race:start', Auth(socket, () => {
     if(!isLoggedIn(socket, 'raceControl')){        socket.emit('racecontrol:error', 
       {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
       return;
@@ -65,81 +60,37 @@ import { raceTrackState, saveState  } from './state.js';
     raceTrackState.currentRace.isEnded = false;
     raceTrackState.currentRace.durationSeconds = TIMER_DURATION;
     io.emit("race:update", raceTrackState)
-
-    // Timer loop - updates every second. 60 second development, 600 for production
-    timerInterval = setInterval(() => {
-        try{
-          if (!raceTrackState.currentRace?.durationSeconds){
-            return;
-          }
-          //Countdown seconds
-          raceTrackState.currentRace.durationSeconds = raceTrackState.currentRace.durationSeconds - 1;
-          //If timer reaches 0 then stop timer
-          if (raceTrackState.currentRace.durationSeconds <= 0) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            raceTrackState.currentRace.durationSeconds = 0;
-            raceTrackState.currentRace.raceMode = "Finish";
-            io.emit("race:finish", raceTrackState)
-          // send timer updates every second to sync leaderboard
-          } else {
-            io.emit("state:update", raceTrackState)
-          }
-          saveState();
-      } catch(err){
-        console.log( "Timer error: ", err)
-        socket.emit("racecontrol:error", { message: "Timer error", error: err.toString() });
-      }
-    }, 1000);
+    startRaceTimer();
+ 
     io.emit("state:update",  raceTrackState );
-  });
+  }));
 
   //Change modes, update them
-  socket.on("race:safe", () => {
-    if(!isLoggedIn(socket, 'raceControl')){
-      socket.emit('racecontrol:error', 
-      {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
-      return;
-    }
+  socket.on("race:safe", Auth(socket, () => {
     raceTrackState.currentRace.raceMode = "Safe";
     io.emit("race:update", raceTrackState);
-  })
+  }));
 
-  socket.on("race:hazard", () => {
-    if(!isLoggedIn(socket, 'raceControl')){
-      socket.emit('racecontrol:error', 
-      {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
-      return;
-    }
+  socket.on("race:hazard", Auth(socket, () => {
     raceTrackState.currentRace.raceMode = "Hazard";
     io.emit("race:update", raceTrackState);
-  })
+  }));
 
-  socket.on("race:danger", () => {
-    if(!isLoggedIn(socket, 'raceControl')){
-      socket.emit('racecontrol:error', 
-      {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
-      return;
-    }
+  socket.on("race:danger", Auth(socket, () => {
     raceTrackState.currentRace.raceMode = "Danger";
     io.emit("race:update", raceTrackState);
-  })
+  }))
 
   // End session for all.
-  socket.on("race:endSession", () => {
-    if(!isLoggedIn(socket, 'raceControl')){
-      socket.emit('racecontrol:error', 
-      {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
-      return;
-    }
+  socket.on("race:endSession", Auth(socket, () => {
     raceTrackState.currentRace.raceMode = "Danger"
     raceTrackState.currentRace.isEnded = true;
     io.emit("race:update",  raceTrackState);
     io.emit('state:update', raceTrackState);
-  })
+  }));
 
   //Finish session
-  socket.on("race:finish", () =>{
+  socket.on("race:finish", Auth(socket, () =>{
     if(!isLoggedIn(socket, 'raceControl')){
       socket.emit('racecontrol:error', 
       {message: 'User Is Not Logged in. Refresh the page and log in.',error: ""});
@@ -154,7 +105,7 @@ import { raceTrackState, saveState  } from './state.js';
   //Push currentrace to History array and set current race to null.
   io.emit("race:update",  raceTrackState);
   io.emit('state:update', raceTrackState);
-  });
+  }));
 
 
 
@@ -222,6 +173,37 @@ import { raceTrackState, saveState  } from './state.js';
       return;
     }
   }
+
+
+  function startRaceTimer() {
+    //Check if there is no timer going already
+  if (timerInterval) return; 
+
+  timerInterval = setInterval(() => {
+    try {
+      //Check if the data exists
+      if (!raceTrackState.currentRace?.durationSeconds) return;
+
+      raceTrackState.currentRace.durationSeconds--;
+
+      if (raceTrackState.currentRace.durationSeconds <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        raceTrackState.currentRace.durationSeconds = 0;
+        raceTrackState.currentRace.raceMode = "Finish";
+        io.emit("race:finish", raceTrackState);
+      } else {
+        io.emit("state:update", raceTrackState); // sync
+      }
+
+      saveState();
+    } catch (err) {
+      console.error("Timer error:", err);
+      socket.emit("racecontrol:error", { message: "Timer error", error: err.toString() });
+    }
+  }, 1000);
+}
+
 }
 
 

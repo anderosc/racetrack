@@ -21,10 +21,11 @@ function updateNextRace(state) {
       body.style.display = "block";
     }
     const race = state.upComingRaces[0];
-    if(state.currentRace?.isStarted && !state.currentRace?.isEnded){
+    if(state.currentRace?.isStarted && state.currentRace?.isEnded){
       nextSession.innerHTML = "<p> Next race session, proceed to the grid  </p>  <p>Session: " + race.sessionName + "  </p>";
-    } else{
+    }else{
       nextSession.innerHTML = "<p>Next Session: " + race.sessionName + "</p>";
+
     }
     
 
