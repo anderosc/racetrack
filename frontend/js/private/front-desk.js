@@ -520,9 +520,10 @@ function createRaceDriverBox(raceSessionName, driverName, carNumber) {
     driverItem.appendChild(deleteBox);
 
     const editBox = document.createElement('div');
-    editBox.className = 'delete inner-box-small';
+    editBox.className = 'edit inner-box-small';
     editBox.style.height = '55px';
     editBox.style.width = '60px';
+    editBox.style.right = '60px';
     editBox.addEventListener("click", editDriver);
 
     const editImg = document.createElement('img');
