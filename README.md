@@ -63,6 +63,9 @@ The system uses Node.js and Socket.IO to ensure all interfaces and displays reac
 
 **Leader Board**
 
+  ![alt text](/images/image0.png)
+- Shows ongoing race leaderboard
+
 **Next Race**
 
 ![alt text](/images/image-2.png)
