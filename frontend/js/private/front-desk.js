@@ -596,10 +596,19 @@ socket.on('login', (msg) => {
     }
 });
 
-socket.on('raceList', (raceSessions) => {
+socket.on('raceList', (raceTrackState) => {
+    let raceSessions = raceTrackState.upComingRaces;
     raceSessions.forEach(element => {
         createRaceBox(element.sessionName);
     });
+    const currentRaceIsEnded = raceTrackState.currentRace.isEnded;
+    if(!currentRaceIsEnded) {
+        //HIDE ALL RACE SESSIONS
+        document.getElementsByClassName("scrollable-container")[0].style.display = "none";
+    }else {
+        //SHOW ALL RACE SESSIONS
+        document.getElementsByClassName("scrollable-container")[0].style.display = "block";
+    }
 });
 
 socket.on('raceSession:create:success', (raceSession) => {
@@ -630,8 +639,16 @@ socket.on('raceSession:delete:success', ({ sessionName }) => {
 });
 
 socket.on('race:update', (raceTrackState) => {
-    const currentRaceName = raceTrackState.currentRace.sessionName;
-    deleteRaceBox(currentRaceName);
+    const currentRaceIsEnded = raceTrackState.currentRace.isEnded;
+    if(!currentRaceIsEnded) {
+        //HIDE ALL RACE SESSIONS
+        const currentRaceName = raceTrackState.currentRace.sessionName;
+        deleteRaceBox(currentRaceName);
+        document.getElementsByClassName("scrollable-container")[0].style.display = "none";
+    }else {
+        //SHOW ALL RACE SESSIONS
+        document.getElementsByClassName("scrollable-container")[0].style.display = "block";
+    }
 });
 
 socket.on('raceSession:driver:add:success', ({ sessionName, driverName, carNumber }) => {

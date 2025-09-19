@@ -93,7 +93,7 @@ io.on('connection', (socket) => {
         if (receptionistToken === process.env.receptionist_key) {
             socket.emit('login', { persona: 'receptionist', status: true, cookie: true });
             socket.join('receptionist');
-            socket.emit('raceList', raceTrackState.upComingRaces);
+            socket.emit('raceList', raceTrackState);
         }
         if (raceControlToken === process.env.safety_key) {
             socket.emit('login', { persona: 'raceControl', status: true, cookie: true });
@@ -115,7 +115,7 @@ io.on('connection', (socket) => {
             if(token === process.env.receptionist_key) {
                 socket.emit('login', { persona: persona, status: true });
                 socket.join('receptionist');
-                socket.emit('raceList', raceTrackState.upComingRaces);
+                socket.emit('raceList', raceTrackState);
             }else {
                 setTimeout(() => {
                     socket.emit('login', { persona: persona, status: false });
