@@ -4,6 +4,8 @@
 Beachside Racetrack needs a system to manage races and provide real-time information to spectators and employees.  
 The system uses Node.js and Socket.IO to ensure all interfaces and displays react instantly to events without polling.
 
+![alt text](/images/gif.gif)
+
 ---
 
 ## Core Features (MVP)
